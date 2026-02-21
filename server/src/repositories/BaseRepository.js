@@ -3,6 +3,7 @@ class BaseRepository {
     this.model = model;
   }
 
+  // Common CRUD methods
   async findById(id) {
     return this.model.findById(id).exec();
   }
@@ -11,6 +12,7 @@ class BaseRepository {
     return this.model.findOne(filter).exec();
   }
 
+  // `options` can include: sort, limit, skip, select
   async find(filter = {}, options = {}) {
     const {
       sort = { createdAt: -1 },
@@ -35,8 +37,12 @@ class BaseRepository {
   }
 
   async update(id, data) {
+    // `new` option deprecated; prefer `returnDocument: 'after'`
     return this.model
-      .findByIdAndUpdate(id, data, { new: true, runValidators: true })
+      .findByIdAndUpdate(id, data, {
+        returnDocument: 'after',
+        runValidators: true,
+      })
       .exec();
   }
 

@@ -1,7 +1,7 @@
 import cardService from '../services/CardService.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
-console.log('⛓ cardService keys:', Object.keys(cardService));
+// console.log('⛓ cardService keys:', Object.keys(cardService));
 // sometimes default export may be nested under .default
 if (!cardService.getAllCards && cardService.default) {
   console.log('⛓ cardService.default keys:', Object.keys(cardService.default));

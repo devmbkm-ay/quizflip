@@ -13,7 +13,11 @@ class CardRepository extends BaseRepository {
   async search(term, options = {}) {
     const regex = new RegExp(term, 'i');
     return this.model
-      .find({ isActive: true, $or: [{ front: regex }, { back: regex }] }, null, options)
+      .find(
+        { isActive: true, $or: [{ front: regex }, { back: regex }] },
+        null,
+        options,
+      )
       .exec();
   }
 
@@ -32,7 +36,10 @@ class CardRepository extends BaseRepository {
       $set: { 'reviewStats.lastReviewed': new Date() },
     };
     if (wasCorrect) update.$inc['reviewStats.timesCorrect'] = 1;
-    return this.model.findByIdAndUpdate(id, update, { new: true }).exec();
+    // `new` is deprecated; use `returnDocument: 'after'` for mongoose >=6.0
+    return this.model
+      .findByIdAndUpdate(id, update, { returnDocument: 'after' })
+      .exec();
   }
 
   async getCategories() {

@@ -15,8 +15,8 @@ const validateCard = [
     .trim()
     .notEmpty()
     .withMessage('Back text is required')
-    .isLength({ max: 255 })
-    .withMessage('Back text must be at most 255 characters long'),
+    .isLength({ max: 500 })
+    .withMessage('Back text must be at most 500 characters long'),
   body('category')
     .optional()
     .trim()
