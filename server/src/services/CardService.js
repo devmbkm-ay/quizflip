@@ -6,6 +6,8 @@ import { ValidationError, NotFoundError } from '../utils/errors.js';
 
 class CardService {
   // basic CRUD used by controllers
+
+  // Get cards with optional filters for category and search term
   async getAllCards(filters = {}) {
     const { category, search, limit = 50 } = filters;
 
@@ -20,6 +22,7 @@ class CardService {
     return cardRepository.find({ isActive: true }, { limit });
   }
 
+  // Get a single card by ID, ensuring it's active
   async getCardById(id) {
     const card = await cardRepository.findById(id);
     if (!card || !card.isActive) {
@@ -28,6 +31,7 @@ class CardService {
     return card;
   }
 
+  // Create a new card with validation and duplicate check
   async createCard(cardData) {
     // now create without user logic until auth added
     if (!cardData.front?.trim() || !cardData.back?.trim()) {
@@ -54,6 +58,7 @@ class CardService {
     });
   }
 
+  // Update an existing card with validation
   async updateCard(id, updateData) {
     const card = await cardRepository.findById(id);
     if (!card) throw new NotFoundError('Card not found');
@@ -66,6 +71,7 @@ class CardService {
     return cardRepository.update(id, updateData);
   }
 
+  // Soft delete a card by marking it as inactive
   async deleteCard(id) {
     const card = await cardRepository.findById(id);
     if (!card) throw new NotFoundError('Card not found');
@@ -73,6 +79,7 @@ class CardService {
     return cardRepository.update(id, { isActive: false });
   }
 
+  // Record a review session for a card, updating review stats
   async recordReview(id, wasCorrect) {
     const card = await cardRepository.findById(id);
     if (!card) throw new NotFoundError('Card not found');
@@ -80,10 +87,12 @@ class CardService {
     return cardRepository.updateReviewStats(id, wasCorrect);
   }
 
+  // Get distinct categories for active cards
   async getCategories() {
     return cardRepository.getCategories();
   }
 
+  // Get overall stats for active cards, including total count and category breakdown
   async getStats() {
     const totalCards = await cardRepository.count({ isActive: true });
     const categories = await cardRepository.getCategories();
@@ -103,6 +112,7 @@ class CardService {
   }
 
   // leftover advanced methods
+  // Get cards for study sessions based on mode (spaced repetition, random, difficult)
   async getCardsForStudy(userId, options = {}) {
     // ...existing implementation remains the same
     const { categoryId, mode = 'spaced', limit = 20 } = options;
@@ -137,7 +147,7 @@ class CardService {
     return cards;
   }
 
-  // other advanced functions omitted for brevity; they may be added later
+  // Get progress stats for a user over a specified period (day, week, month)
   async getCardsForStudy(userId, options = {}) {
     const { categoryId, mode = 'spaced', limit = 20 } = options;
 
@@ -175,6 +185,7 @@ class CardService {
     return cards;
   }
 
+  // Record a study session for a card, updating review stats and session history
   async recordStudySession(userId, sessionData) {
     const { cardId, wasCorrect, timeSpent, studyMode } = sessionData;
 
@@ -204,6 +215,7 @@ class CardService {
     return session;
   }
 
+  // Get progress stats for a user over a specified period (day, week, month)
   async getProgressStats(userId, period = 'week') {
     const now = new Date();
     let startDate;
@@ -237,6 +249,7 @@ class CardService {
     };
   }
 
+  // Calculate overall mastery percentage across all cards for the user
   async calculateOverallMastery(userId) {
     const stats = await cardRepository.model.aggregate([
       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
@@ -259,8 +272,8 @@ class CardService {
       : 0;
   }
 
+  // Calculate consecutive study days for streaks
   async calculateStreak(userId) {
-    // Implementation for calculating consecutive study days
     const sessions = await studySessionRepository.find(
       { userId },
       { sort: { createdAt: -1 } },

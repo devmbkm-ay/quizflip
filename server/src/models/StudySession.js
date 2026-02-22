@@ -1,10 +1,12 @@
 // server/src/models/StudySession.js
+import mongoose from 'mongoose';
+
 const studySessionSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
       required: true,
+      index: true,
     },
     cardId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -14,26 +16,26 @@ const studySessionSchema = new mongoose.Schema(
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
-      required: true,
+      required: false, // <-- CHANGED: Made optional
     },
     wasCorrect: {
       type: Boolean,
       required: true,
     },
-    timeSpent: {
-      // in seconds
-      type: Number,
-      min: 0,
-    },
     studyMode: {
       type: String,
-      enum: ['flip', 'quiz', 'spaced'],
-      default: 'flip',
+      enum: ['flip', 'quiz', 'spaced', 'random'],
+      default: 'random',
+    },
+    timeSpent: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true },
 );
 
-const StudySession = mongoose.model('StudySession', studySessionSchema);
+studySessionSchema.index({ userId: 1, createdAt: -1 });
 
+const StudySession = mongoose.model('StudySession', studySessionSchema);
 export default StudySession;
