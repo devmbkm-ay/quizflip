@@ -62,7 +62,7 @@ services:
       - /app/node_modules
     depends_on:
       - server
-    command: npm run dev -- --host 0.0.0.0 --port 3000
+    command: npm run dev:docker
 
 volumes:
   mongo_data:
