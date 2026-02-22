@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { cardApi } from '../services/api';
 
-export function AutoGenerate({ onCardsCreated }) {
+export function AutoGenerate({
+  onCardsCreated,
+  floatingClassName = 'fixed bottom-8 left-8 z-40',
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [notes, setNotes] = useState('');
   const [category, setCategory] = useState('');
@@ -52,7 +55,7 @@ export function AutoGenerate({ onCardsCreated }) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 left-8 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg shadow-purple-500/30 flex items-center gap-2 transition-all duration-300 hover:scale-105 z-40"
+        className={`${floatingClassName} px-4 sm:px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 transition-all duration-300 hover:scale-105`}
       >
         <svg
           className="w-5 h-5"

@@ -258,10 +258,16 @@ function StudyMode() {
       {/* Cards Grid */}
 
       {/* Admin Dashboard with manual creation*/}
-      <CardDashboard onCardCreated={loadData} />
+      <CardDashboard
+        onCardCreated={loadData}
+        floatingClassName="fixed right-4 bottom-24 sm:bottom-8 sm:right-8 z-40"
+      />
 
       {/* AI Auto-Generation */}
-      <AutoGenerate onCardsCreated={loadData} />
+      <AutoGenerate
+        onCardsCreated={loadData}
+        floatingClassName="fixed bottom-24 left-4 sm:bottom-8 sm:left-8 z-40"
+      />
 
       {filteredCards.length === 0 ? (
         <div className="text-center py-20 px-8">
@@ -361,13 +367,13 @@ function Navigation() {
   ];
 
   return (
-    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-      <div className="flex gap-2 p-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+    <nav className="fixed bottom-3 left-4 right-4 sm:bottom-6 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-40">
+      <div className="flex justify-center sm:justify-start gap-2 p-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
         {links.map((link) => (
           <Link
             key={link.path}
             to={link.path}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all ${
+            className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-medium transition-all ${
               location.pathname === link.path
                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
                 : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -391,7 +397,7 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-slate-950 pb-24">
+      <div className="min-h-screen bg-slate-950 pb-36 sm:pb-24">
         <Routes>
           <Route path="/" element={<StudyMode key={cardsVersion} />} />
           <Route
