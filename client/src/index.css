@@ -1,46 +1,263 @@
 
 @import "tailwindcss";
 
+
 @layer base {
-  body {
-    @apply bg-slate-950 text-slate-100 antialiased;
+  :root {
+    --card-transition: 700ms;
+    --card-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
+
 @layer utilities {
   .backface-hidden {
     backface-visibility: hidden;
   }
 }
 
-@layer utilities {
-  .perspective-1000 {
-    perspective: 1000px;
+@layer base {
+  * {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950;
   }
   
-  .preserve-3d {
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased;
+    background-image: 
+      radial-gradient(ellipse 80% 50% at 20% 40%, rgba(99, 102, 241, 0.15), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 60%, rgba(139, 92, 246, 0.1), transparent);
+  }
+  
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* 3D Flip Card - Accessible */
+  .flip-card {
+    perspective: 1200px;
     transform-style: preserve-3d;
+    @apply relative;
+  }
+  
+  .flip-card-inner {
+    @apply relative w-full h-full transition-transform;
+    transition-duration: var(--card-transition);
+    transition-timing-function: var(--card-ease);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  
+  .flip-card[data-flipped="true"] .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-face {
+   position: absolute;
+   inset: 0;
+   width: 100%;
+   height: 100%;
+   backface-visibility: hidden;
+   border-radius: 0.75rem;
+  }
+  
+  /* .flip-card-face {
+    @apply absolute inset-0 backface-hidden rounded-2xl overflow-hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    overflow: hidden;
+    isolation: isolate;
+  } */
+
+   /* Front face always on top when not flipped */
+  .flip-card-front {
+    @apply z-20;
+    transform: rotateY(0deg) translateZ(1px); /* Slight Z offset for clean stack */
+  }
+  
+  .flip-card-back {
+        @apply z-10;
+
+    transform: rotateY(180deg) translateZ(0);
+  }
+  
+  /* Elevation & Glow */
+  .card-elevation {
+    @apply shadow-xl shadow-black/40;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    overflow: visible;
+  }
+  
+  .card-elevation:hover {
+    @apply shadow-2xl shadow-indigo-500/20;
+    transform: translateY(-4px) scale(1.02);
+  }
+  
+  /* Glassmorphism */
+  .glass-card {
+    @apply bg-slate-900/90 backdrop-blur-xl border border-white/10;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+  }
+  
+  .glass-card-back {
+    @apply bg-gradient-to-br from-indigo-950/90 via-slate-900/95 to-purple-950/90 backdrop-blur-xl border border-indigo-500/20;
+  }
+  
+  /* Animated Gradient Border */
+  .gradient-border {
+    position: relative;
+  }
+  
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.2));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  
+  .gradient-border:hover::before,
+  .flip-card[data-flipped="true"] .gradient-border::before {
+    opacity: 1;
+  }
+  
+  /* Floating Animation - Staggered */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(0.5deg); }
+  }
+  
+  .animate-float {
+    animation: float 5s ease-in-out infinite;
+  }
+  
+  /* Stagger delays */
+  .stagger-1 { animation-delay: 0ms; }
+  .stagger-2 { animation-delay: 100ms; }
+  .stagger-3 { animation-delay: 200ms; }
+  .stagger-4 { animation-delay: 300ms; }
+  
+  /* Pulse glow for active elements */
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.5); }
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  /* Difficulty Stars with Animation */
+  .star-icon {
+    @apply w-2 h-2 rounded-full transition-all duration-300;
+  }
+  
+  .star-icon.filled {
+    @apply bg-amber-400;
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+    transform: scale(1.1);
+  }
+  
+  .star-icon.empty {
+    @apply bg-slate-700;
+  }
+  
+  /* Button Interactions */
+  .btn-interactive {
+    @apply relative overflow-hidden transition-all duration-200;
+    @apply active:scale-95 active:duration-75;
+    @apply hover:brightness-110;
+  }
+  
+  .btn-interactive::after {
+    content: '';
+    @apply absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-200;
+  }
+  
+  .btn-interactive:hover::after {
+    @apply opacity-100;
+  }
+  
+  .btn-interactive:active::after {
+    @apply bg-black/10;
+  }
+  
+  /* Success/Error States */
+  .status-badge {
+    @apply px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-sm;
+    transition: all 0.3s ease;
+  }
+  
+  .status-badge.success {
+    @apply bg-emerald-500/15 text-emerald-400 border-emerald-500/30;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+  }
+  
+  .status-badge.warning {
+    @apply bg-amber-500/15 text-amber-400 border-amber-500/30;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+  }
+  
+  .status-badge.danger {
+    @apply bg-rose-500/15 text-rose-400 border-rose-500/30;
+    box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
+  }
+  
+  /* Loading Skeleton */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  
+  .skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  /* Focus styles for keyboard navigation */
+  .keyboard-focus:focus-visible {
+    @apply ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-950;
+  }
+  
+  /* Screen reader only */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400;
   }
   
   .backface-hidden {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-slate-900;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-700 rounded;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-600;
+  
+  /* Smooth scroll */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
 }
