@@ -4,8 +4,11 @@ import FlipCard from './components/FlipCard';
 import { Toast } from './components/Toast';
 import { CardDashboard } from './components/CardDashboard';
 import { AutoGenerate } from './components/AutoGenerate';
+import { CardManager } from './components/CardManager';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useLocation, Link } from 'react-router';
 
-function App() {
+function StudyMode() {
   const [cards, setCards] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -345,6 +348,60 @@ function App() {
         </div>
       </footer>
     </div>
+  );
+}
+
+//Navigation
+function Navigation() {
+  const location = useLocation();
+
+  const links = [
+    { path: '/', label: 'Study', icon: '📚' },
+    { path: '/manage', label: 'Manage Cards', icon: '🎛️' },
+  ];
+
+  return (
+    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+      <div className="flex gap-2 p-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+        {links.map((link) => (
+          <Link
+            key={link.path}
+            to={link.path}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all ${
+              location.pathname === link.path
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <span>{link.icon}</span>
+            <span className="hidden sm:inline">{link.label}</span>
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+function App() {
+  const [cardsVersion, setCardsVersion] = useState(0);
+
+  const handleCardsChange = () => {
+    setCardsVersion((v) => v + 1);
+  };
+
+  return (
+    <Router>
+      <div className="min-h-screen bg-slate-950 pb-24">
+        <Routes>
+          <Route path="/" element={<StudyMode key={cardsVersion} />} />
+          <Route
+            path="/manage"
+            element={<CardManager onCardsChange={handleCardsChange} />}
+          />
+        </Routes>
+        <Navigation />
+      </div>
+    </Router>
   );
 }
 
