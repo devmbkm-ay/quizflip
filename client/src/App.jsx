@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { cardApi } from './services/api';
 import FlipCard from './components/FlipCard';
 import { Toast } from './components/Toast';
+import { CardDashboard } from './components/CardDashboard';
+import { AutoGenerate } from './components/AutoGenerate';
 
 function App() {
   const [cards, setCards] = useState([]);
@@ -251,6 +253,13 @@ function App() {
       </header>
 
       {/* Cards Grid */}
+
+      {/* Admin Dashboard with manual creation*/}
+      <CardDashboard onCardCreated={loadData} />
+
+      {/* AI Auto-Generation */}
+      <AutoGenerate onCardsCreated={loadData} />
+
       {filteredCards.length === 0 ? (
         <div className="text-center py-20 px-8">
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-slate-800/50 flex items-center justify-center">
