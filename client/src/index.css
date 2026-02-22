@@ -244,6 +244,161 @@
     white-space: nowrap;
     border-width: 0;
   }
+   /* Premium Glass */
+  .glass-premium {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Animated border gradient */
+  .border-gradient {
+    position: relative;
+    background: rgba(15, 23, 42, 0.95);
+    border-radius: inherit;
+  }
+  
+  .border-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(139, 92, 246, 0.3), transparent 60%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  
+  /* Input focus animation */
+  .input-glow {
+    @apply transition-all duration-300;
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+  
+  .input-glow:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 0 20px rgba(99, 102, 241, 0.1);
+  }
+  
+  /* Floating label */
+  .floating-label {
+    @apply absolute left-4 transition-all duration-200 pointer-events-none;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(148, 163, 184, 0.8);
+  }
+  
+  .floating-label.active {
+    top: 0.75rem;
+    transform: translateY(0) scale(0.85);
+    color: rgba(99, 102, 241, 0.9);
+  }
+  
+  /* Character counter animation */
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+  
+  .char-count-warning {
+    color: rgb(251, 191, 36);
+    animation: pulse-soft 2s infinite;
+  }
+  
+  .char-count-danger {
+    color: rgb(244, 63, 94);
+    animation: pulse-soft 1s infinite;
+  }
+  
+  /* Difficulty selector */
+  .difficulty-btn {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+  
+  .difficulty-btn::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300;
+  }
+  
+  .difficulty-btn:hover::before,
+  .difficulty-btn.active::before {
+    @apply opacity-100;
+  }
+  
+  .difficulty-btn.active {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Live preview card */
+  .preview-card {
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .preview-card:hover {
+    transform: rotateY(5deg) rotateX(-5deg);
+  }
+  
+  /* Submit button shine */
+  .btn-shine {
+    @apply relative overflow-hidden;
+  }
+  
+  .btn-shine::after {
+    content: '';
+    @apply absolute top-0 -left-full w-full h-full;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .btn-shine:hover::after {
+    left: 100%;
+  }
+  
+  /* Tag pills */
+  .tag-pill {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all duration-200;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: rgba(165, 180, 252, 0.9);
+  }
+  
+  .tag-pill:hover {
+    background: rgba(99, 102, 241, 0.25);
+    transform: translateY(-1px);
+  }
+  
+  /* Modal entrance */
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  
+  .animate-modal-in {
+    animation: modal-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  /* Backdrop blur animation */
+  @keyframes backdrop-in {
+    from { backdrop-filter: blur(0px); }
+    to { backdrop-filter: blur(8px); }
+  }
+  
+  .animate-backdrop {
+    animation: backdrop-in 0.3s ease forwards;
+  }
 }
 
 @layer utilities {
