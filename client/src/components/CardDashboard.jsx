@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { cardApi } from '../services/api';
 
-export function CardDashboard({ onCardCreated }) {
+export function CardDashboard({
+  onCardCreated,
+  floatingClassName = 'fixed bottom-8 right-8 z-40',
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -104,7 +107,7 @@ export function CardDashboard({ onCardCreated }) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 group z-40"
+        className={`${floatingClassName} group`}
         aria-label="Create new card"
       >
         <div className="absolute inset-0 bg-indigo-500 rounded-full blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500" />

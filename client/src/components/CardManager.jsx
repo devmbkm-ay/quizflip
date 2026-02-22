@@ -239,35 +239,76 @@ export function CardManager({ onCardsChange }) {
   return (
     <div className="min-h-screen bg-slate-950">
       {/* Header */}
+      {/* <div className="flex flex-col lg:flex-row lg:items-center gap-4"> */}
       <header className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gradient">Card Manager</h1>
-              <p className="text-sm text-slate-500 mt-1">
-                {cards.length} cards • {categories.length} categories
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              {/* Search */}
-              <div className="relative">
-                <SearchIcon />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search cards..."
-                  className="w-full sm:w-64 pl-10 pr-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm text-slate-100 placeholder-slate-600 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
-                />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
+            <div className="flex items-center gap-4 min-w-0">
+              {/* Back Button */}
+              <div
+                onClick={() => window.history.back()}
+                className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-900/30 rounded-lg cursor-pointer transition-colors shrink-0"
+                title="Go Back"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
+                </svg>
               </div>
 
-              {/* Category Filter */}
-              <div className="relative">
+              {/* Title */}
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-gradient">
+                  Card Manager
+                </h1>
+                <p className="text-xs text-slate-500 truncate">
+                  {cards.length} cards • {categories.length} categories
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 w-full sm:flex-row lg:flex-1">
+              {/* Search */}
+              <div className="w-full sm:flex-1 lg:max-w-md">
+                <div className="relative">
+                  <svg
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search cards..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm text-slate-100 placeholder-slate-600 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Filter */}
+              <div className="w-full sm:w-48 lg:w-44">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full sm:w-40 pl-10 pr-8 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm text-slate-100 appearance-none cursor-pointer focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
+                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm text-slate-100 appearance-none cursor-pointer focus:border-indigo-500/50"
                 >
                   <option value="all">All Categories</option>
                   {categories.map((cat) => (
@@ -276,23 +317,33 @@ export function CardManager({ onCardsChange }) {
                     </option>
                   ))}
                 </select>
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-                  <FilterIcon />
-                </div>
               </div>
 
-              {/* Create Button */}
+              {/* New Card */}
               <button
                 onClick={handleCreate}
-                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all hover:shadow-lg hover:shadow-indigo-500/25 active:scale-95"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all hover:shadow-lg hover:shadow-indigo-500/25 whitespace-nowrap"
               >
-                <PlusIcon />
-                <span className="hidden sm:inline">New Card</span>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                New Card
               </button>
             </div>
           </div>
         </div>
       </header>
+      {/* </div> */}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
