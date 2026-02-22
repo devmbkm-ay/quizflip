@@ -6,47 +6,63 @@ services:
     container_name: flipcard-mongo
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_DB}
+      MONGO_INITDB_ROOT_USERNAME: ${LOCAL_MONGO_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${LOCAL_MONGO_ROOT_PASSWORD:-rootpassword}
+      MONGO_INITDB_DATABASE: ${LOCAL_MONGO_DB:-quizflip}
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT:-27017}:27017"
     volumes:
       - mongo_data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
 
   server:
-    build: ./server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     container_name: flipcard-server
     restart: unless-stopped
     environment:
       NODE_ENV: development
       PORT: 5000
-      MONGODB_URI: mongodb://${MONGO_APP_USERNAME}:${MONGO_APP_PASSWORD}@mongodb:27017/${MONGO_DB}
-      JWT_SECRET: ${JWT_SECRET}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://${LOCAL_MONGO_ROOT_USERNAME:-root}:${LOCAL_MONGO_ROOT_PASSWORD:-rootpassword}@mongodb:27017/${LOCAL_MONGO_DB:-quizflip}?authSource=admin}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-env}
       JWT_EXPIRE: 7d
     ports:
-      - "5000:5000"
+      - "${SERVER_PORT:-5000}:5000"
     volumes:
       - ./server:/app
       - /app/node_modules
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_started
     command: npm run dev
 
   client:
-    build: ./client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
     container_name: flipcard-client
     restart: unless-stopped
     environment:
-      REACT_APP_API_URL: http://localhost:5000/api
+      VITE_REACT_APP_API_BASE_URL: ${VITE_REACT_APP_API_BASE_URL:-http://localhost:5000/api}
     ports:
-      - "3000:3000"
+      - "${CLIENT_PORT:-3000}:3000"
     volumes:
       - ./client:/app
       - /app/node_modules
     depends_on:
       - server
+    command: npm run dev -- --host 0.0.0.0 --port 3000
 
 volumes:
   mongo_data:

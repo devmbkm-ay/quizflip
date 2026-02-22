@@ -13,7 +13,12 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  }),
+);
 
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
