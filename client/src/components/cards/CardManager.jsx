@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { cardApi } from '../services/api';
+import { cardApi } from '../../services/api';
 
 // Icons as components for clarity
 const PlusIcon = () => (

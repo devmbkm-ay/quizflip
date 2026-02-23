@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-function FlipCard({ card, onReview, index = 0 }) {
+export function FlipCard({ card, onReview, index = 0 }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [announcement, setAnnouncement] = useState('');
@@ -284,5 +284,3 @@ function FlipCard({ card, onReview, index = 0 }) {
     </>
   );
 }
-
-export default FlipCard;

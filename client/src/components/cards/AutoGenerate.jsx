@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { cardApi } from '../services/api';
+import { cardApi } from '../../services/api';
 
 export function AutoGenerate({
   onCardsCreated,
