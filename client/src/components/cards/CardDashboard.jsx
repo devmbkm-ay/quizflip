@@ -111,7 +111,7 @@ export function CardDashboard({
         aria-label="Create new card"
       >
         <div className="absolute inset-0 bg-indigo-500 rounded-full blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500" />
-        <div className="relative w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl shadow-2xl shadow-indigo-500/40 flex items-center justify-center transition-all duration-300 group-hover:rounded-3xl group-active:scale-95">
+        <div className="relative w-16 h-16 bg--to-br from-indigo-500 to-purple-600 text-white rounded-2xl shadow-2xl shadow-indigo-500/40 flex items-center justify-center transition-all duration-300 group-hover:rounded-3xl group-active:scale-95">
           <svg
             className="w-7 h-7 transition-transform duration-300"
             fill="none"

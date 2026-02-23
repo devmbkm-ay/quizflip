@@ -1,4 +1,4 @@
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../contexts/AppContext.jsx';
 import { FlipCard } from '../../components/cards/FlipCard';
 import { CategoryFilter } from '../../components/ui/CategoryFilter';
 import { StatsHeader } from '../../components/layout/StatsHeader';

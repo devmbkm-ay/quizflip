@@ -1,4 +1,4 @@
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../contexts/AppContext.jsx';
 import { StudyView } from '../../features/study/StudyView';
 import { ManageView } from '../../features/manage/ManageView';
 import { BottomNavigation } from './BottomNavigation';

@@ -320,7 +320,7 @@ export function CardManager({ onCardsChange }) {
               </div>
 
               {/* New Card */}
-              <button
+              {/* <button
                 onClick={handleCreate}
                 className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all hover:shadow-lg hover:shadow-indigo-500/25 whitespace-nowrap"
               >
@@ -338,7 +338,7 @@ export function CardManager({ onCardsChange }) {
                   />
                 </svg>
                 New Card
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

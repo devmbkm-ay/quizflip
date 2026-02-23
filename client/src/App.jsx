@@ -1,4 +1,4 @@
-import { AppProvider } from './contexts/AppContext';
+import { AppProvider } from './contexts/AppContext.jsx';
 import { AppLayout } from './components/layout/AppLayout';
 
 function App() {
