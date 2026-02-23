@@ -1,7 +1,7 @@
 import { useApp } from '../../contexts/AppContext.jsx';
-import { CardManager } from '../../components/cards/CardManager';
-import { CardDashboard } from '../../components/cards/CardDashboard';
-import { AutoGenerate } from '../../components/cards/AutoGenerate';
+import { CardManager } from '../../components/cards/CardManager.jsx';
+import { CardDashboard } from '../../components/cards/CardDashboard.jsx';
+import { AutoGenerate } from '../../components/cards/AutoGenerate.jsx';
 // import { SearchBar } from '../../components/ui/SearchBar';
 
 export function ManageView() {

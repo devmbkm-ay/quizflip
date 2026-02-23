@@ -1,12 +1,12 @@
 import { createContext, useContext, useState } from 'react';
-import { useCards } from '../hooks/useCard';
-import { useToast } from '../hooks/useToast';
-import { useFilter } from '../hooks/useFilter';
+import { useCard } from '../hooks/useCard.js';
+import { useToast } from '../hooks/useToast.js';
+import { useFilter } from '../hooks/useFilter.js';
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
-  const cardsData = useCards();
+  const cardsData = useCard();
   const toast = useToast();
   const filter = useFilter(cardsData.cards, 'category');
   const [view, setView] = useState('study'); // 'study' | 'manage'

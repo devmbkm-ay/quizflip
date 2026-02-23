@@ -1,10 +1,10 @@
 import { useApp } from '../../contexts/AppContext.jsx';
-import { FlipCard } from '../../components/cards/FlipCard';
-import { CategoryFilter } from '../../components/ui/CategoryFilter';
-import { StatsHeader } from '../../components/layout/StatsHeader';
-import { LoadingState } from '../../components/ui/LoadingState';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { EmptyState } from '../../components/ui/EmptyState';
+import { FlipCard } from '../../components/cards/FlipCard.jsx';
+import { CategoryFilter } from '../../components/ui/CategoryFilter.jsx';
+import { StatsHeader } from '../../components/layout/StatsHeader.jsx';
+import { LoadingState } from '../../components/ui/LoadingState.jsx';
+import { ErrorState } from '../../components/ui/ErrorState.jsx';
+import { EmptyState } from '../../components/ui/EmptyState.jsx';
 
 export function StudyView() {
   const {

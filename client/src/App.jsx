@@ -1,5 +1,5 @@
 import { AppProvider } from './contexts/AppContext.jsx';
-import { AppLayout } from './components/layout/AppLayout';
+import { AppLayout } from './components/layout/AppLayout.jsx';
 
 function App() {
   return (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { cardApi } from '../../services/api';
+import { cardApi } from '../../services/api.js';
 
 export function CardDashboard({
   onCardCreated,

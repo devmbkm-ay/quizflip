@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { cardApi } from '../services/api';
+import { cardApi } from '../services/api.js';
 
 export function useCards() {
   const [cards, setCards] = useState([]);
@@ -24,6 +24,7 @@ export function useCards() {
       setCards(cardsRes.data || []);
       setCategories(catsRes.data || []);
       setStats(statsRes.data);
+      setError(null);
     } catch (err) {
       setError(err.message);
       throw err;
@@ -35,6 +36,7 @@ export function useCards() {
 
   const refresh = useCallback(() => loadData(true), [loadData]);
 
+  // CRUD operations
   const createCard = useCallback(
     async (data) => {
       const res = await cardApi.create(data);
@@ -101,7 +103,7 @@ export function useCards() {
     error,
     isRefreshing,
     loadData,
-    refresh,
+    refresh: () => loadData(true),
     createCard,
     updateCard,
     deleteCard,

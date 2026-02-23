@@ -1,7 +1,7 @@
 import { useApp } from '../../contexts/AppContext.jsx';
-import { StudyView } from '../../features/study/StudyView';
-import { ManageView } from '../../features/manage/ManageView';
-import { BottomNavigation } from './BottomNavigation';
+import { StudyView } from '../../features/study/StudyView.jsx';
+import { ManageView } from '../../features/manage/ManageView.jsx';
+import { BottomNavigation } from './BottomNavigation.jsx';
 import { Toast } from '../ui/Toast';
 
 export function AppLayout() {
