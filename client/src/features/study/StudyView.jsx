@@ -8,6 +8,7 @@ import { EmptyState } from '../../components/ui/EmptyState.jsx';
 
 export function StudyView() {
   const {
+    cards: allCards,
     filteredItems: cards,
     categories,
     stats,
@@ -43,9 +44,9 @@ export function StudyView() {
         counts={categories.reduce(
           (acc, cat) => ({
             ...acc,
-            [cat]: cards.filter((c) => c.category === cat).length,
+            [cat]: allCards.filter((c) => c.category === cat).length,
           }),
-          { all: cards.length },
+          { all: allCards.length },
         )}
       />
 
