@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import cardRoutes from './routes/card.js';
+import aiRoutes from './routes/ai.js';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -17,6 +18,7 @@ app.use(
   cors({
     origin: process.env.CORS_ORIGIN || '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
   }),
 );
 
@@ -24,7 +26,7 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increase payload limit for AI-generated content
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -32,10 +34,14 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     message: 'API is healthy',
     timestamp: new Date().toISOString(),
+    services: {
+      ai: process.env.GOOGLE_API_KEY ? 'available' : 'unavailable',
+    },
   });
 });
 
 app.use('/api/cards', cardRoutes);
+app.use('/api/ai', aiRoutes);
 
 // 404
 app.use((req, res) => {
