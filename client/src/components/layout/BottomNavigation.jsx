@@ -5,7 +5,7 @@ const navItems = [
 
 export function BottomNavigation({ current, onChange }) {
   return (
-    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+    <nav className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40">
       <div className="flex gap-2 p-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
         {navItems.map((item) => (
           <button

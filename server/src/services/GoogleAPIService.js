@@ -1,6 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const PRIMARY_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const FALLBACK_MODELS = [PRIMARY_MODEL, 'gemini-2.0-flash', 'gemini-1.5-flash']
+  .filter(Boolean)
+  .filter((model, index, arr) => arr.indexOf(model) === index);
 
 const GENERATION_CONFIG = {
   temperature: 0.3,
@@ -72,12 +76,6 @@ export const generateCardsFromNotes = async (
     throw new AppError('Card count must be between 1 and 20', 400);
   }
 
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash-001',
-    generationConfig: GENERATION_CONFIG,
-    safetySettings: SAFETY_SETTINGS,
-  });
-
   const prompt = `Create ${count} flashcards from these study notes. Return a JSON object with a "cards" array.
 
 STUDY NOTES:
@@ -104,8 +102,37 @@ JSON SCHEMA:
 }`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
+    let response;
+    let lastError;
+
+    for (const modelName of FALLBACK_MODELS) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: GENERATION_CONFIG,
+          safetySettings: SAFETY_SETTINGS,
+        });
+
+        const result = await model.generateContent(prompt);
+        response = await result.response;
+        break;
+      } catch (err) {
+        lastError = err;
+        const message = String(err?.message || '').toLowerCase();
+        const isRetiredModelError =
+          message.includes('404') ||
+          message.includes('not found') ||
+          message.includes('no longer available');
+
+        if (!isRetiredModelError) {
+          throw err;
+        }
+      }
+    }
+
+    if (!response) {
+      throw lastError || new Error('No compatible Gemini model available');
+    }
 
     if (response.promptFeedback?.blockReason) {
       throw new AppError(
@@ -188,6 +215,12 @@ JSON SCHEMA:
     if (error.message?.includes('503') || error.status === 503) {
       throw new AppError(
         'AI service temporarily unavailable. Please try again.',
+        503,
+      );
+    }
+    if (error.message?.includes('404') || error.status === 404) {
+      throw new AppError(
+        'Configured AI model is unavailable. Please set a newer GEMINI_MODEL value.',
         503,
       );
     }

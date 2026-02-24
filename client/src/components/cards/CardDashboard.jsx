@@ -3,7 +3,7 @@ import { cardApi } from '../../services/api.js';
 
 export function CardDashboard({
   onCardCreated,
-  floatingClassName = 'fixed bottom-8 right-8 z-40',
+  floatingClassName = 'fixed bottom-2 right-4 sm:bottom-8 sm:right-8 z-40',
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -119,7 +119,7 @@ export function CardDashboard({
         aria-label="Create new card"
       >
         <div className="absolute inset-0 bg-indigo-500 rounded-full blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500" />
-        <div className="relative w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl shadow-2xl shadow-indigo-500/40 flex items-center justify-center transition-all duration-300 group-hover:rounded-3xl group-active:scale-95">
+        <div className="relative w-12 h-12 top-2 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl shadow-2xl shadow-indigo-500/40 flex items-center justify-center transition-all duration-300 group-hover:rounded-3xl group-active:scale-95">
           <svg
             className="w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-300"
             fill="none"

@@ -89,7 +89,7 @@ export function AutoGenerate({ onCardsCreated }) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 left-8 flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-full shadow-lg shadow-purple-500/30 transition-all hover:scale-105 z-40"
+        className="fixed bottom-4 left-4 sm:bottom-8 sm:left-8 flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-full shadow-lg shadow-purple-500/30 transition-all hover:scale-105 z-40"
       >
         <svg
           className="w-5 h-5"
