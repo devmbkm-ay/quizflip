@@ -171,6 +171,62 @@ class CardController {
     res.status(201).json({ success: true, data: card });
   });
 
+  createBatch = asyncHandler(async (req, res) => {
+    const cards = Array.isArray(req.body.cards) ? req.body.cards : [];
+
+    const normalizedCards = cards.map((card) => ({
+      front: card.front.trim(),
+      back: card.back.trim(),
+      category: (card.category || 'general').toLowerCase().trim(),
+      difficulty: card.difficulty || 2,
+      tags: Array.isArray(card.tags) ? card.tags : [],
+    }));
+
+    if (normalizedCards.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'No cards provided for batch creation',
+      });
+    }
+
+    const duplicateChecks = normalizedCards.map((card) => ({
+      front: card.front,
+      back: card.back,
+      category: card.category,
+      isActive: true,
+    }));
+
+    const existingCards = await Card.find({ $or: duplicateChecks })
+      .select('front back category')
+      .lean();
+
+    const existingKeys = new Set(
+      existingCards.map((card) => `${card.front}::${card.back}::${card.category}`),
+    );
+
+    const cardsToCreate = normalizedCards.filter(
+      (card) =>
+        !existingKeys.has(`${card.front}::${card.back}::${card.category}`),
+    );
+
+    if (cardsToCreate.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error:
+          'All submitted cards already exist in this category (same front and back).',
+      });
+    }
+
+    const created = await Card.insertMany(cardsToCreate, { ordered: false });
+
+    return res.status(201).json({
+      success: true,
+      count: created.length,
+      skipped: normalizedCards.length - created.length,
+      data: created,
+    });
+  });
+
   getOne = asyncHandler(async (req, res) => {
     // ID already validated by middleware
     const card = await Card.findById(req.params.id);

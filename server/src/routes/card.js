@@ -46,6 +46,40 @@ const validateCardBody = [
   handleValidation, // Add this to check results
 ];
 
+const validateBatchCardBody = [
+  body('cards')
+    .isArray({ min: 1, max: 100 })
+    .withMessage('cards must be an array with 1 to 100 items'),
+  body('cards.*.front')
+    .trim()
+    .notEmpty()
+    .withMessage('Each card front text is required')
+    .isLength({ max: 255 })
+    .withMessage('Each card front text must be at most 255 characters'),
+  body('cards.*.back')
+    .trim()
+    .notEmpty()
+    .withMessage('Each card back text is required')
+    .isLength({ max: 500 })
+    .withMessage('Each card back text must be at most 500 characters'),
+  body('cards.*.category')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Each card category must be at most 100 characters'),
+  body('cards.*.difficulty')
+    .optional()
+    .isIn([1, 2, 3])
+    .withMessage(
+      'Each card difficulty must be 1 (easy), 2 (medium), or 3 (hard)',
+    ),
+  body('cards.*.tags')
+    .optional()
+    .isArray()
+    .withMessage('Each card tags field must be an array'),
+  handleValidation,
+];
+
 const validateObjectId = (field) => [
   param(field).isMongoId().withMessage(`Invalid ${field} format`),
   handleValidation, // Add this to check results
@@ -78,6 +112,8 @@ router
   .route('/')
   .get(CardController.getAll)
   .post(validateCardBody, CardController.create);
+
+router.post('/batch', validateBatchCardBody, CardController.createBatch);
 
 router
   .route('/:id')
