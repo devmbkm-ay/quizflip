@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { cardApi } from '../services/api.js';
 
-export function useCards() {
+export function useCard() {
   const [cards, setCards] = useState([]);
   const [categories, setCategories] = useState([]);
   const [stats, setStats] = useState(null);
@@ -92,7 +92,9 @@ export function useCards() {
   }, []);
 
   useEffect(() => {
-    loadData();
+    loadData().catch(() => {
+      // Error state is already set in loadData; this prevents unhandled promise warnings.
+    });
   }, [loadData]);
 
   return {
