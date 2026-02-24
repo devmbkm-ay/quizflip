@@ -83,13 +83,15 @@ export const aiApi = {
    * @param {string} notes - Study notes content
    * @param {string} [category='general'] - Category for the cards
    * @param {number} [count=5] - Number of cards to generate (1-20)
+   * @param {'fr'|'en'} [language='fr'] - Output language
    * @returns {Promise<{success: boolean, data: Array, meta: Object}>}
    */
-  generate: (notes, category = 'general', count = 5) =>
+  generate: (notes, category = 'general', count = 5, language = 'fr') =>
     api.post('/ai/generate', {
       notes,
       category,
       count,
+      language,
     }),
 
   /**

@@ -7,13 +7,17 @@ import { body, validationResult } from 'express-validator';
 export const validateGenerateRequest = [
   body('notes')
     .trim()
-    .isLength({ min: 10, max: 10000 })
-    .withMessage('Notes must be between 10 and 10000 characters'),
+    .isLength({ min: 10, max: 5000 })
+    .withMessage('Notes must be between 10 and 5000 characters'),
   body('category')
-    .optional()
+    .optional({ values: 'falsy' })
     .trim()
     .isLength({ min: 1, max: 50 })
     .withMessage('Category must be between 1 and 50 characters'),
+  body('language')
+    .optional()
+    .isIn(['fr', 'en'])
+    .withMessage('Language must be fr or en'),
   body('count')
     .optional()
     .isInt({ min: 1, max: 20 })
@@ -28,7 +32,11 @@ export const validateBatchRequest = [
     .trim()
     .isLength({ min: 10, max: 5000 })
     .withMessage('Each topic must be between 10 and 5000 characters'),
-  body('category').optional().trim().isLength({ min: 1, max: 50 }),
+  body('category')
+    .optional({ values: 'falsy' })
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Category must be between 1 and 50 characters'),
   body('cardsPerTopic').optional().isInt({ min: 1, max: 10 }),
 ];
 
@@ -43,12 +51,13 @@ export const generateCards = async (req, res, next) => {
       });
     }
 
-    const { notes, category, count = 5 } = req.body;
+    const { notes, category, count = 5, language = 'fr' } = req.body;
 
     const result = await generateCardsFromNotes(
       notes,
       category,
       parseInt(count),
+      language,
     );
 
     res.status(200).json({
@@ -76,12 +85,13 @@ export const generateCardsBatchController = async (req, res, next) => {
       });
     }
 
-    const { topics, category, cardsPerTopic = 3 } = req.body;
+    const { topics, category, cardsPerTopic = 3, language = 'fr' } = req.body;
 
     const result = await generateCardsBatch(
       topics,
       category,
       parseInt(cardsPerTopic),
+      language,
     );
 
     res.status(200).json({

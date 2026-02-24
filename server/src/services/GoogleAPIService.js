@@ -67,6 +67,7 @@ export const generateCardsFromNotes = async (
   notes,
   category = 'general',
   count = 5,
+  language = 'fr',
 ) => {
   if (!notes || typeof notes !== 'string' || notes.trim().length < 10) {
     throw new AppError('Notes must be at least 10 characters long', 400);
@@ -76,12 +77,14 @@ export const generateCardsFromNotes = async (
     throw new AppError('Card count must be between 1 and 20', 400);
   }
 
+  const outputLanguage = language === 'en' ? 'English' : 'French';
   const prompt = `Create ${count} flashcards from these study notes. Return a JSON object with a "cards" array.
 
 STUDY NOTES:
-${notes.slice(0, 10000)}
+${notes.slice(0, 5000)}
 
 CATEGORY: ${category || 'general'}
+OUTPUT LANGUAGE: ${outputLanguage}
 
 REQUIREMENTS:
 - Each card must have: front (question), back (answer), difficulty (1-3)
@@ -89,6 +92,7 @@ REQUIREMENTS:
 - Back: Concise answer with key facts only (max 500 chars)
 - Difficulty: 1 (basic recall), 2 (understanding), 3 (application/analysis)
 - Ensure questions test understanding, not just memorization
+- All front/back text must be written in ${outputLanguage}
 
 JSON SCHEMA:
 {
@@ -249,6 +253,7 @@ export const generateCardsBatch = async (
   topics,
   category = 'general',
   cardsPerTopic = 3,
+  language = 'fr',
 ) => {
   if (!Array.isArray(topics) || topics.length === 0) {
     throw new AppError('Topics must be a non-empty array', 400);
@@ -259,7 +264,7 @@ export const generateCardsBatch = async (
   }
 
   const promises = topics.map((topic, index) =>
-    generateCardsFromNotes(topic, category, cardsPerTopic)
+    generateCardsFromNotes(topic, category, cardsPerTopic, language)
       .then((result) => ({ status: 'fulfilled', value: result, index }))
       .catch((error) => ({
         status: 'rejected',

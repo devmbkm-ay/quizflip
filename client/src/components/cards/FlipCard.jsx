@@ -3,10 +3,12 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 export function FlipCard({ card, onReview, index = 0 }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [showBackFade, setShowBackFade] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const cardRef = useRef(null);
   const frontRef = useRef(null);
   const backRef = useRef(null);
+  const answerScrollRef = useRef(null);
 
   // Handle flip with accessibility
   const handleFlip = useCallback(() => {
@@ -88,6 +90,38 @@ export function FlipCard({ card, onReview, index = 0 }) {
   const mastery = getMasteryStatus(card.mastery || 0);
   const staggerClass = `stagger-${(index % 4) + 1}`;
 
+  const updateBackFade = useCallback(() => {
+    const el = answerScrollRef.current;
+    if (!el) {
+      setShowBackFade(false);
+      return;
+    }
+
+    const hasOverflow = el.scrollHeight > el.clientHeight + 1;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+    setShowBackFade(hasOverflow && !atBottom);
+  }, []);
+
+  useEffect(() => {
+    if (!isFlipped) {
+      setShowBackFade(false);
+      return;
+    }
+
+    const raf = requestAnimationFrame(updateBackFade);
+    const el = answerScrollRef.current;
+    if (!el) return () => cancelAnimationFrame(raf);
+
+    el.addEventListener('scroll', updateBackFade, { passive: true });
+    window.addEventListener('resize', updateBackFade);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener('scroll', updateBackFade);
+      window.removeEventListener('resize', updateBackFade);
+    };
+  }, [isFlipped, card.back, updateBackFade]);
+
   return (
     <>
       {/* Screen reader announcements */}
@@ -97,7 +131,7 @@ export function FlipCard({ card, onReview, index = 0 }) {
 
       <article
         ref={cardRef}
-        className={`flip-card h-80 w-full animate-float ${staggerClass} group`}
+        className={`flip-card h-[21rem] w-full animate-float ${staggerClass} group`}
         data-flipped={isFlipped}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -111,7 +145,7 @@ export function FlipCard({ card, onReview, index = 0 }) {
           {/* Front Face */}
           <div
             ref={frontRef}
-            className="flip-card-face glass-card gradient-border p-6 flex flex-col cursor-pointer"
+            className="flip-card-face glass-card gradient-border p-6 flex flex-col cursor-pointer overflow-hidden"
           >
             {/* Header */}
             <header className="flex justify-between items-start mb-4">
@@ -134,8 +168,8 @@ export function FlipCard({ card, onReview, index = 0 }) {
             </header>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-2">
-              <h3 className="text-xl font-semibold text-center leading-relaxed text-slate-100 group-hover:text-indigo-200 transition-colors duration-300">
+            <div className="flex-1 min-h-0 flex items-center justify-center px-2">
+              <h3 className="text-xl font-semibold text-center leading-relaxed text-slate-100 group-hover:text-indigo-200 transition-colors duration-300 line-clamp-6">
                 {card.front}
               </h3>
             </div>
@@ -177,7 +211,7 @@ export function FlipCard({ card, onReview, index = 0 }) {
           {/* Back Face */}
           <div
             ref={backRef}
-            className="flip-card-face flip-card-back glass-card-back p-6 flex flex-col cursor-pointer"
+            className="flip-card-face flip-card-back glass-card-back p-6 flex flex-col cursor-pointer overflow-hidden"
           >
             {/* Background Effects */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -199,10 +233,21 @@ export function FlipCard({ card, onReview, index = 0 }) {
               </header>
 
               {/* Answer Text */}
-              <div className="flex-1 flex items-center justify-center px-2 py-4">
-                <p className="text-lg text-slate-200 text-center leading-relaxed whitespace-pre-wrap">
-                  {card.back}
-                </p>
+              <div className="relative flex-1 min-h-0 px-2 py-4 overflow-hidden">
+                <div
+                  ref={answerScrollRef}
+                  className="no-scrollbar h-full overflow-y-auto pr-1"
+                >
+                  <p className="min-h-full flex items-center justify-center text-lg text-slate-200 text-center leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
+                    {card.back}
+                  </p>
+                </div>
+                {showBackFade && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute bottom-4 left-2 right-3 h-10 bg-gradient-to-t from-slate-950/95 via-slate-950/60 to-transparent"
+                  />
+                )}
               </div>
 
               {/* Review Actions */}
@@ -257,7 +302,7 @@ export function FlipCard({ card, onReview, index = 0 }) {
               )}
 
               {/* Keyboard Hint */}
-              <div className="mt-3 text-center text-xs text-slate-500 flex items-center justify-center gap-4">
+              {/* <div className="mt-3 text-center text-xs text-slate-500 flex items-center justify-center gap-4">
                 <span className="flex items-center gap-1">
                   <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 font-mono text-xs">
                     ←
@@ -276,7 +321,7 @@ export function FlipCard({ card, onReview, index = 0 }) {
                   </kbd>
                   Flip
                 </span>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
