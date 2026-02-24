@@ -24,7 +24,22 @@ export function CardDashboard({
     if (isOpen) {
       setIsAnimating(true);
       loadCategories();
+      // Prevent body scroll on mobile
+      document.body.classList.add(
+        'overflow-hidden',
+        'fixed',
+        'w-full',
+        'h-full',
+      );
     }
+    return () => {
+      document.body.classList.remove(
+        'overflow-hidden',
+        'fixed',
+        'w-full',
+        'h-full',
+      );
+    };
   }, [isOpen]);
 
   const loadCategories = async () => {
@@ -63,7 +78,6 @@ export function CardDashboard({
 
       showToast('Card created successfully!', 'success');
 
-      // Reset with animation
       setFormData({
         front: '',
         back: '',
@@ -92,28 +106,22 @@ export function CardDashboard({
 
   const getCharCountColor = (current, max) => {
     const ratio = current / max;
-    if (ratio > 0.9) return 'char-count-danger';
-    if (ratio > 0.75) return 'char-count-warning';
-    return 'text-slate-600';
-  };
-
-  const fabVariants = {
-    idle: { scale: 1, rotate: 0 },
-    hover: { scale: 1.1, rotate: 90 },
-    tap: { scale: 0.95 },
+    if (ratio > 0.9) return 'text-rose-400 animate-pulse';
+    if (ratio > 0.75) return 'text-amber-400';
+    return 'text-slate-500';
   };
 
   if (!isOpen) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`${floatingClassName} group`}
+        className={`${floatingClassName} group touch-manipulation`}
         aria-label="Create new card"
       >
         <div className="absolute inset-0 bg-indigo-500 rounded-full blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500" />
-        <div className="relative w-16 h-16 bg--to-br from-indigo-500 to-purple-600 text-white rounded-2xl shadow-2xl shadow-indigo-500/40 flex items-center justify-center transition-all duration-300 group-hover:rounded-3xl group-active:scale-95">
+        <div className="relative w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl shadow-2xl shadow-indigo-500/40 flex items-center justify-center transition-all duration-300 group-hover:rounded-3xl group-active:scale-95">
           <svg
-            className="w-7 h-7 transition-transform duration-300"
+            className="w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-300"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -131,37 +139,35 @@ export function CardDashboard({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Animated Backdrop */}
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-slate-950/60 animate-backdrop transition-opacity"
+        className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-backdrop"
         onClick={() => !isSubmitting && setIsOpen(false)}
       />
 
-      {/* Modal */}
-      <div
-        className={`relative w-full max-w-4xl glass-premium rounded-3xl shadow-2xl overflow-hidden animate-modal-in ${isAnimating ? '' : ''}`}
-      >
-        {/* Header with gradient line */}
-        <div className="relative px-8 py-6 border-b border-white/5">
+      {/* Modal - Full screen on mobile, centered on desktop */}
+      <div className="relative w-full h-full sm:h-auto sm:max-h-[95vh] sm:max-w-4xl glass-premium sm:rounded-3xl shadow-2xl overflow-hidden animate-modal-in flex flex-col">
+        {/* Header */}
+        <div className="relative px-4 sm:px-8 py-4 sm:py-6 border-b border-white/5 shrink-0">
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-gradient mb-1">
                 Create Flashcard
               </h2>
-              <p className="text-sm text-slate-400">
+              <p className="text-xs sm:text-sm text-slate-400">
                 Craft the perfect question and answer
               </p>
             </div>
             <button
               onClick={() => !isSubmitting && setIsOpen(false)}
               disabled={isSubmitting}
-              className="p-2 hover:bg-white/5 rounded-xl transition-colors disabled:opacity-50"
+              className="p-2 -mr-2 sm:mr-0 hover:bg-white/5 rounded-xl transition-colors disabled:opacity-50 touch-manipulation"
               aria-label="Close"
             >
               <svg
-                className="w-6 h-6 text-slate-400"
+                className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -177,12 +183,13 @@ export function CardDashboard({
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row">
-          {/* Form Side */}
-          <div className="flex-1 p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Front Input */}
-              <div className="group">
+        {/* Content - Stack on mobile, side-by-side on desktop */}
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+          {/* Form Side - Scrollable */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              {/* Question */}
+              <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2 flex justify-between">
                   <span>Question</span>
                   <span
@@ -198,19 +205,15 @@ export function CardDashboard({
                     onChange={handleChange}
                     onFocus={() => setShowPreview(true)}
                     placeholder="What is the capital of France?"
-                    className="w-full h-28 px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-600 input-glow resize-none"
+                    className="w-full h-24 sm:h-28 px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-600 input-glow resize-none text-base"
+                    style={{ fontSize: '16px' }} // Prevent iOS zoom
                     maxLength={255}
                   />
-                  <div className="absolute bottom-3 right-3 opacity-0 group-focus-within:opacity-100 transition-opacity">
-                    <span className="text-xs text-indigo-400 font-medium">
-                      Front side
-                    </span>
-                  </div>
                 </div>
               </div>
 
-              {/* Back Input */}
-              <div className="group">
+              {/* Answer */}
+              <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2 flex justify-between">
                   <span>Answer</span>
                   <span
@@ -225,20 +228,16 @@ export function CardDashboard({
                     value={formData.back}
                     onChange={handleChange}
                     placeholder="Paris is the capital and most populous city of France..."
-                    className="w-full h-32 px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-600 input-glow resize-none"
+                    className="w-full h-28 sm:h-32 px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-600 input-glow resize-none text-base"
+                    style={{ fontSize: '16px' }}
                     maxLength={500}
                   />
-                  <div className="absolute bottom-3 right-3 opacity-0 group-focus-within:opacity-100 transition-opacity">
-                    <span className="text-xs text-emerald-400 font-medium">
-                      Back side
-                    </span>
-                  </div>
                 </div>
               </div>
 
-              {/* Category & Difficulty Row */}
+              {/* Category & Difficulty */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Category with autocomplete */}
+                {/* Category */}
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Category
@@ -251,7 +250,8 @@ export function CardDashboard({
                       onChange={handleChange}
                       placeholder="e.g. Geography"
                       list="categories"
-                      className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-600 input-glow"
+                      className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-600 input-glow text-base"
+                      style={{ fontSize: '16px' }}
                     />
                     <datalist id="categories">
                       {categories.map((cat) => (
@@ -274,12 +274,12 @@ export function CardDashboard({
                   </div>
                 </div>
 
-                {/* Difficulty Stars */}
+                {/* Difficulty - Mobile optimized grid */}
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Difficulty
                   </label>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     {[1, 2, 3].map((level) => (
                       <button
                         key={level}
@@ -290,13 +290,16 @@ export function CardDashboard({
                             difficulty: level,
                           }))
                         }
-                        className={`difficulty-btn flex-1 py-3 rounded-xl border transition-all ${
-                          formData.difficulty === level
-                            ? 'active border-amber-500/50 bg-amber-500/10 text-amber-400'
-                            : 'border-slate-700/50 bg-slate-900/30 text-slate-600 hover:border-slate-600 hover:text-slate-400'
-                        }`}
+                        className={`
+                          difficulty-btn py-3 rounded-xl border transition-all min-h-[48px] touch-manipulation
+                          ${
+                            formData.difficulty === level
+                              ? 'border-amber-500/50 bg-amber-500/10 text-amber-400 shadow-lg shadow-amber-500/10'
+                              : 'border-slate-700/50 bg-slate-900/30 text-slate-600 hover:border-slate-600 hover:text-slate-400'
+                          }
+                        `}
                       >
-                        <span className="relative z-10">
+                        <span className="text-sm sm:text-base">
                           {'★'.repeat(level)}
                         </span>
                       </button>
@@ -309,7 +312,7 @@ export function CardDashboard({
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
                   Tags
-                  <span className="text-slate-500 font-normal ml-1">
+                  <span className="text-slate-500 font-normal ml-1 text-xs">
                     (comma separated)
                   </span>
                 </label>
@@ -319,7 +322,8 @@ export function CardDashboard({
                   value={formData.tags}
                   onChange={handleChange}
                   placeholder="europe, capital, history"
-                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-600 input-glow"
+                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-slate-100 placeholder-slate-600 input-glow text-base"
+                  style={{ fontSize: '16px' }}
                 />
                 {formData.tags && (
                   <div className="flex flex-wrap gap-2 mt-3">
@@ -327,7 +331,7 @@ export function CardDashboard({
                       .split(',')
                       .filter(Boolean)
                       .map((tag, i) => (
-                        <span key={i} className="tag-pill">
+                        <span key={i} className="tag-pill text-xs sm:text-sm">
                           {tag.trim()}
                         </span>
                       ))}
@@ -335,13 +339,13 @@ export function CardDashboard({
                 )}
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-3 pt-4">
+              {/* Actions - Stack on mobile */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
                   disabled={isSubmitting}
-                  className="px-6 py-3 rounded-xl border border-slate-700/50 text-slate-400 hover:text-white hover:bg-white/5 transition-all disabled:opacity-50"
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-700/50 text-slate-400 hover:text-white hover:bg-white/5 transition-all disabled:opacity-50 touch-manipulation"
                 >
                   Cancel
                 </button>
@@ -352,7 +356,7 @@ export function CardDashboard({
                     !formData.front.trim() ||
                     !formData.back.trim()
                   }
-                  className="flex-1 btn-shine py-3 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25"
+                  className="w-full sm:flex-1 btn-shine py-3 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 touch-manipulation min-h-[48px]"
                 >
                   {isSubmitting ? (
                     <>
@@ -397,16 +401,18 @@ export function CardDashboard({
             </form>
           </div>
 
-          {/* Live Preview Side */}
+          {/* Preview Side - Hidden on small mobile, shown on lg */}
           <div
-            className={`lg:w-80 bg-slate-900/30 border-l border-white/5 p-8 transition-all duration-500 ${showPreview ? 'opacity-100' : 'opacity-50'}`}
+            className={`
+              hidden lg:block lg:w-80 bg-slate-900/30 border-l border-white/5 p-8 transition-all duration-500
+              ${showPreview ? 'opacity-100' : 'opacity-50'}
+            `}
           >
             <h3 className="text-sm font-medium text-slate-400 mb-4 uppercase tracking-wider">
               Live Preview
             </h3>
 
             <div className="preview-card relative h-64">
-              {/* Front Preview */}
               <div className="absolute inset-0 glass-premium rounded-2xl p-5 flex flex-col border-gradient">
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-xs font-bold px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded">
@@ -441,11 +447,14 @@ export function CardDashboard({
         {/* Toast */}
         {toast && (
           <div
-            className={`absolute bottom-6 left-6 right-6 py-4 px-6 rounded-xl text-center font-medium animate-fade-in ${
-              toast.type === 'success'
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-            }`}
+            className={`
+              absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-auto sm:min-w-[300px] py-3 sm:py-4 px-4 sm:px-6 rounded-xl text-center font-medium animate-fade-in z-10
+              ${
+                toast.type === 'success'
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+              }
+            `}
           >
             {toast.message}
           </div>

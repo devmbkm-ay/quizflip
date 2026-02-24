@@ -6,46 +6,26 @@ import { AutoGenerate } from '../../components/cards/AutoGenerate.jsx';
 
 export function ManageView() {
   const {
-    filteredItems: cards,
-    categories,
-    loading,
-    createCard,
-    updateCard,
-    deleteCard,
     show,
-    // search,
-    // setSearch,
-    filter,
-    setFilter,
-    // refresh,
+    refresh,
   } = useApp();
 
-  const handleCreate = async (data) => {
+  const handleCardCreated = async () => {
     try {
-      await createCard(data);
+      await refresh();
       show('Card created successfully!');
     } catch (err) {
       show(err.message, 'error');
-      throw err;
     }
   };
 
-  const handleUpdate = async (id, data) => {
+  const handleCardsCreated = async (cards = []) => {
     try {
-      await updateCard(id, data);
-      show('Card updated!');
+      await refresh();
+      const count = Array.isArray(cards) ? cards.length : 1;
+      show(`${count} card${count > 1 ? 's' : ''} created successfully!`);
     } catch (err) {
       show(err.message, 'error');
-      throw err;
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await deleteCard(id);
-      show('Card deleted');
-    } catch (err) {
-      show('Failed to delete', 'error');
     }
   };
 
@@ -68,18 +48,11 @@ export function ManageView() {
       </div>
 
       <CardManager
-        cards={cards}
-        categories={categories}
-        loading={loading}
-        onCreate={handleCreate}
-        onUpdate={handleUpdate}
-        onDelete={handleDelete}
-        selectedCategory={filter}
-        onCategoryChange={setFilter}
+        onCardsChange={refresh}
       />
 
-      <CardDashboard onCardCreated={handleCreate} />
-      <AutoGenerate onCardsCreated={handleCreate} />
+      <CardDashboard onCardCreated={handleCardCreated} />
+      <AutoGenerate onCardsCreated={handleCardsCreated} />
     </div>
   );
 }

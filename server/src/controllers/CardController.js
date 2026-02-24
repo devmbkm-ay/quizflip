@@ -140,25 +140,30 @@ class CardController {
 
   create = asyncHandler(async (req, res) => {
     const { front, back, category, difficulty, tags } = req.body;
+    const normalizedFront = front.trim();
+    const normalizedBack = back.trim();
+    const normalizedCategory = category.toLowerCase().trim();
 
-    // Check for duplicate
+    // Block only exact duplicates inside the same category.
     const existing = await Card.findOne({
-      front: front.trim(),
-      category: category.toLowerCase(),
+      front: normalizedFront,
+      back: normalizedBack,
+      category: normalizedCategory,
       isActive: true,
     });
 
     if (existing) {
       return res.status(400).json({
         success: false,
-        error: 'Duplicate field value entered',
+        error:
+          'An identical card already exists in this category (same front and back).',
       });
     }
 
     const card = await Card.create({
-      front: front.trim(),
-      back: back.trim(),
-      category: category.toLowerCase(),
+      front: normalizedFront,
+      back: normalizedBack,
+      category: normalizedCategory,
       difficulty: difficulty || 2,
       tags: tags || [],
     });
@@ -186,19 +191,32 @@ class CardController {
     if (updates.back) updates.back = updates.back.trim();
     if (updates.category) updates.category = updates.category.toLowerCase();
 
-    // Check for duplicate if front/category changing
-    if (updates.front && updates.category) {
+    // Check for duplicate when front/back/category combination changes.
+    if (updates.front || updates.back || updates.category) {
+      const current = await Card.findById(id).lean();
+      if (!current) {
+        throw new NotFoundError('Card not found');
+      }
+
+      const candidateFront = (updates.front ?? current.front).trim();
+      const candidateBack = (updates.back ?? current.back).trim();
+      const candidateCategory = (updates.category ?? current.category)
+        .toLowerCase()
+        .trim();
+
       const existing = await Card.findOne({
         _id: { $ne: id },
-        front: updates.front,
-        category: updates.category,
+        front: candidateFront,
+        back: candidateBack,
+        category: candidateCategory,
         isActive: true,
       });
 
       if (existing) {
         return res.status(400).json({
           success: false,
-          error: 'Duplicate field value entered',
+          error:
+            'An identical card already exists in this category (same front and back).',
         });
       }
     }

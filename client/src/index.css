@@ -10,8 +10,33 @@
 }
 
 @layer utilities {
-  .backface-hidden {
+
+   .backface-hidden {
     backface-visibility: hidden;
+  }
+  /* Mobile touch optimization */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* Safe area support for notched phones */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Prevent iOS zoom on inputs */
+  .text-base-mobile {
+    font-size: 16px;
+  }
+  
+  @media (min-width: 640px) {
+    .text-base-mobile {
+      font-size: 0.875rem; /* sm:text-sm */
+    }
   }
 }
 
@@ -398,6 +423,15 @@
   
   .animate-backdrop {
     animation: backdrop-in 0.3s ease forwards;
+  }
+   /* Input glow effect - uses your existing colors */
+  .input-glow {
+    @apply transition-all duration-300;
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+  
+  .input-glow:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 0 20px rgba(99, 102, 241, 0.1);
   }
 }
 
