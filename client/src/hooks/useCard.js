@@ -92,9 +92,17 @@ export function useCard() {
   }, []);
 
   useEffect(() => {
-    loadData().catch(() => {
-      // Error state is already set in loadData; this prevents unhandled promise warnings.
-    });
+    const token = localStorage.getItem('token');
+
+    // On ne lance le chargement que si on a un token
+    // Cela évite les erreurs 401 au premier montage avant le Login
+    if (token) {
+      loadData().catch(() => {
+        // Error state is already set in loadData; this prevents unhandled promise warnings.
+      });
+    } else {
+      setLoading(false); // Pas de token, on ne charge pas les données
+    }
   }, [loadData]);
 
   return {
