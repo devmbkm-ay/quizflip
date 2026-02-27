@@ -1,21 +1,17 @@
 import express from 'express';
 import { body, param } from 'express-validator';
-import CardController from '../controllers/CardController.js'; // Vérifie bien le nom du fichier
-import { validate } from '../middleware/validate.js'; // Utilisons notre middleware de validation centralisé
+import CardController from '../controllers/CardController.js';
+import { validate } from '../middleware/validate.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// STATS & ANALYTICS
-router.get('/stats/overview', CardController.getStats);
-router.get('/stats/categories', CardController.getCategories);
+// --- LOGIQUE NINJA : Protection Globale ---
+// Toutes les routes définies ci-dessous passeront par le middleware protect.
+// req.user sera injecté avec l'ID de l'utilisateur connecté.
+router.use(protect);
 
-router.get('/stats/progress/:userId', CardController.getProgressStats);
-
-// STUDY SESSION
-router.get('/study/session', CardController.getCardsForStudy);
-
-// MAIN CRUD
-// Validation rules (définies plus bas ou importées)
+// --- VALIDATIONS ---
 const cardValidation = [
   body('front').trim().notEmpty().withMessage('Front text is required'),
   body('back').trim().notEmpty().withMessage('Back text is required'),
@@ -25,32 +21,23 @@ const cardValidation = [
 const batchValidation = [
   body('cards')
     .isArray({ min: 1, max: 100 })
-    .withMessage('cards must be an array with 1 to 100 items'),
-  body('cards.*.front')
-    .trim()
-    .notEmpty()
-    .withMessage('Each card front text is required'),
-  body('cards.*.back')
-    .trim()
-    .notEmpty()
-    .withMessage('Each card back text is required'),
-  body('cards.*.category')
-    .optional()
-    .trim()
-    .isLength({ max: 100 })
-    .withMessage('Each card category must be at most 100 characters'),
-  body('cards.*.difficulty')
-    .optional()
-    .isIn([1, 2, 3])
-    .withMessage(
-      'Each card difficulty must be 1 (easy), 2 (medium), or 3 (hard)',
-    ),
-  body('cards.*.tags')
-    .optional()
-    .isArray()
-    .withMessage('Each card tags field must be an array'),
+    .withMessage('Must provide 1-100 cards'),
+  body('cards.*.front').trim().notEmpty().withMessage('Front is required'),
+  body('cards.*.back').trim().notEmpty().withMessage('Back is required'),
 ];
 
+// --- ROUTES ---
+
+// STATS
+router.get('/stats/overview', CardController.getStats);
+router.get('/stats/categories', CardController.getCategories);
+// On a supprimé le :userId car on utilise req.user.id dans le contrôleur
+router.get('/stats/progress', CardController.getProgressStats);
+
+// STUDY
+router.get('/study/session', CardController.getCardsForStudy);
+
+// CRUD de base
 router
   .route('/')
   .get(CardController.getAll)
@@ -64,7 +51,7 @@ router
   .put(param('id').isMongoId(), cardValidation, validate, CardController.update)
   .delete(param('id').isMongoId(), validate, CardController.delete);
 
-// CARD ACTIONS
+// ACTIONS
 router.post(
   '/:id/review',
   [
