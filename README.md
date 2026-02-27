@@ -13,3 +13,7 @@ Full-stack flashcard application with React frontend and Node.js/MongoDB backend
 - `/server` - Node.js Express API
 - `/client` - React frontend
 - `/docker-compose.yml` - MongoDB container
+
+## Deployment
+
+- GCP dev/prod setup guide (no custom domain): `docs/GCP_PRODUCTION_SETUP.md`

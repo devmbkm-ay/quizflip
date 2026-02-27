@@ -7,6 +7,8 @@ import morgan from 'morgan';
 
 import cardRoutes from './routes/card.js';
 import aiRoutes from './routes/ai.js';
+import authRoutes from './routes/auth.js';
+import errorHandler from './middleware/error.js';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -42,6 +44,8 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/cards', cardRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/auth', authRoutes);
+app.use(errorHandler);
 
 // 404
 app.use((req, res) => {
@@ -52,43 +56,43 @@ app.use((req, res) => {
 });
 
 // Global error handler
-app.use((err, req, res, next) => {
-  if (process.env.NODE_ENV !== 'test') {
-    console.error(err);
-  }
+// app.use((err, req, res, next) => {
+//   if (process.env.NODE_ENV !== 'test') {
+//     console.error(err);
+//   }
 
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({
-      success: false,
-      error: 'Validation Error',
-    });
-  }
+//   if (err.name === 'ValidationError') {
+//     return res.status(400).json({
+//       success: false,
+//       error: 'Validation Error',
+//     });
+//   }
 
-  if (err.code === 11000) {
-    return res.status(400).json({
-      success: false,
-      error: 'Duplicate field value entered',
-    });
-  }
+//   if (err.code === 11000) {
+//     return res.status(400).json({
+//       success: false,
+//       error: 'Duplicate field value entered',
+//     });
+//   }
 
-  if (err.name === 'CastError') {
-    return res.status(400).json({
-      success: false,
-      error: 'Resource not found',
-    });
-  }
+//   if (err.name === 'CastError') {
+//     return res.status(400).json({
+//       success: false,
+//       error: 'Resource not found',
+//     });
+//   }
 
-  if (err.isOperational) {
-    return res.status(err.statusCode).json({
-      success: false,
-      error: err.message,
-    });
-  }
+//   if (err.isOperational) {
+//     return res.status(err.statusCode).json({
+//       success: false,
+//       error: err.message,
+//     });
+//   }
 
-  res.status(500).json({
-    success: false,
-    error: 'Internal server error',
-  });
-});
+//   res.status(500).json({
+//     success: false,
+//     error: 'Internal server error',
+//   });
+// });
 
 export default app;

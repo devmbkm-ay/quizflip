@@ -1,4 +1,4 @@
-import Card from '../models/card.js';
+import Card from '../models/Card.js';
 import BaseRepository from './BaseRepository.js';
 
 class CardRepository extends BaseRepository {
@@ -6,59 +6,41 @@ class CardRepository extends BaseRepository {
     super(Card);
   }
 
-  async findByCategory(category, options = {}) {
-    return this.find({ category, isActive: true }, options);
+  // Agrégation pour les catégories (très performant)
+  async getCategoryBreakdown(userId) {
+    return this.model.aggregate([
+      { $match: { user: userId, isActive: true } },
+      { $group: { _id: '$category', count: { $sum: 1 } } },
+      { $project: { name: '$_id', count: 1, _id: 0 } },
+    ]);
   }
 
-  async search(term, options = {}) {
-    const regex = new RegExp(term, 'i');
-    return this.model
-      .find(
-        { isActive: true, $or: [{ front: regex }, { back: regex }] },
-        null,
-        options,
-      )
-      .exec();
-  }
+  // Centralisation de la logique de sélection des cartes
+  async findForStudy(userId, mode, limit) {
+    const query = { user: userId, isActive: true };
 
-  async findDueForReview(userId, limit = 20) {
-    // userId is ignored until auth is added
-    const now = new Date();
-    return this.find(
-      { isActive: true, 'reviewStats.lastReviewed': { $lte: now } },
-      { limit, sort: { 'reviewStats.lastReviewed': 1 } },
-    );
-  }
-
-  async updateReviewStats(id, wasCorrect) {
-    const update = {
-      $inc: { 'reviewStats.timesReviewed': 1 },
-      $set: { 'reviewStats.lastReviewed': new Date() },
-    };
-    if (wasCorrect) update.$inc['reviewStats.timesCorrect'] = 1;
-    // `new` is deprecated; use `returnDocument: 'after'` for mongoose >=6.0
-    return this.model
-      .findByIdAndUpdate(id, update, { returnDocument: 'after' })
-      .exec();
-  }
-
-  async getCategories() {
-    return this.model.distinct('category', { isActive: true });
-  }
-
-  async getStudyStats(userId, start, end) {
-    return this.model
-      .aggregate([
-        { $match: { createdAt: { $gte: start, $lte: end } } },
+    if (mode === 'difficult') {
+      query['reviewStats.timesCorrect'] = { $lt: 3 };
+    } else if (mode === 'spaced') {
+      query.$or = [
+        { 'reviewStats.lastReviewed': null },
         {
-          $group: {
-            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-            count: { $sum: 1 },
+          'reviewStats.lastReviewed': {
+            $lte: new Date(Date.now() - 24 * 60 * 60 * 1000),
           },
         },
-        { $sort: { _id: 1 } },
-      ])
-      .exec();
+      ];
+    }
+
+    // Si mode random, on utilise l'agrégation $sample de MongoDB
+    if (mode === 'random') {
+      return this.model.aggregate([
+        { $match: query },
+        { $sample: { size: limit } },
+      ]);
+    }
+
+    return this.model.find(query).limit(limit).exec();
   }
 }
 

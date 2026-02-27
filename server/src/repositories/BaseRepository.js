@@ -3,6 +3,12 @@ class BaseRepository {
     this.model = model;
   }
 
+  applyUserFilter(filter, userId) {
+    if (userId) {
+      return { ...filter, user: userId };
+    }
+    return filter;
+  }
   // Common CRUD methods
   async findById(id) {
     return this.model.findById(id).exec();
@@ -13,7 +19,7 @@ class BaseRepository {
   }
 
   // `options` can include: sort, limit, skip, select
-  async find(filter = {}, options = {}) {
+  async find(filter = {}, options = {}, userId = null) {
     const {
       sort = { createdAt: -1 },
       limit = 0,
@@ -21,7 +27,9 @@ class BaseRepository {
       select = null,
     } = options;
 
-    let query = this.model.find(filter);
+    const finalFilter = this.applyUserFilter(filter, userId);
+
+    let query = this.model.find(finalFilter);
 
     if (select) query = query.select(select);
     if (sort) query = query.sort(sort);
@@ -36,22 +44,23 @@ class BaseRepository {
     return document.save();
   }
 
-  async update(id, data) {
+  async updateSecure(id, userId, data) {
     // `new` option deprecated; prefer `returnDocument: 'after'`
     return this.model
-      .findByIdAndUpdate(id, data, {
+      .findOneAndUpdate({ _id: id, user: userId }, data, {
         returnDocument: 'after',
         runValidators: true,
       })
       .exec();
   }
 
-  async delete(id) {
-    return this.model.findByIdAndDelete(id).exec();
+  async deleteSecure(id, userId) {
+    return this.model.findOneAndDelete({ _id: id, user: userId }).exec();
   }
 
-  async count(filter = {}) {
-    return this.model.countDocuments(filter).exec();
+  async count(filter = {}, userId = null) {
+    const finalFilter = this.applyUserFilter(filter, userId);
+    return this.model.countDocuments(finalFilter).exec();
   }
 }
 

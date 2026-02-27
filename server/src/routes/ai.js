@@ -5,7 +5,7 @@ import {
   generateCardsBatchController,
   validateGenerateRequest,
   validateBatchRequest,
-} from '../controllers/Aicontroller.js';
+} from '../controllers/AiController.js';
 
 const router = express.Router();
 

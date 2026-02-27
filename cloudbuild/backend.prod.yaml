@@ -1,0 +1,50 @@
+substitutions:
+  _REGION: us-central1
+  _REPOSITORY: quizflip
+  _SERVICE: quizflip-api-prod
+  _CORS_ORIGIN: "REPLACE_WITH_FRONTEND_URL"
+  _MIN_INSTANCES: "1"
+  _MAX_INSTANCES: "10"
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - server/Dockerfile.prod
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA
+      - ./server
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA
+      - --region
+      - ${_REGION}
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --port
+      - "8080"
+      - --min-instances
+      - ${_MIN_INSTANCES}
+      - --max-instances
+      - ${_MAX_INSTANCES}
+      - --ingress
+      - all
+      - --set-env-vars
+      - NODE_ENV=production,CORS_ORIGIN=${_CORS_ORIGIN},GEMINI_MODEL=gemini-2.5-flash
+      - --set-secrets
+      - JWT_SECRET=JWT_SECRET:latest,GOOGLE_API_KEY=GOOGLE_API_KEY:latest,MONGODB_URI=MONGODB_URI:latest
+
+timeout: 1800s

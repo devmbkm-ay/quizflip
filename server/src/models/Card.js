@@ -39,6 +39,11 @@ const cardSchema = new mongoose.Schema(
         lowercase: true,
       },
     ],
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     reviewStats: {
       timesReviewed: { type: Number, default: 0 },
       timesCorrect: { type: Number, default: 0 },

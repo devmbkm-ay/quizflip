@@ -98,7 +98,7 @@ const FilterIcon = () => (
   </svg>
 );
 
-export function CardManager({ onCardsChange }) {
+export function CardManager({ onCardsChange, onBack }) {
   const [cards, setCards] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -246,7 +246,7 @@ export function CardManager({ onCardsChange }) {
             <div className="flex items-center gap-4 min-w-0">
               {/* Back Button */}
               <div
-                onClick={() => window.history.back()}
+                onClick={() => onBack?.()}
                 className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-900/30 rounded-lg cursor-pointer transition-colors shrink-0"
                 title="Go Back"
               >

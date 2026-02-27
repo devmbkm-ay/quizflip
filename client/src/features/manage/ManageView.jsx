@@ -8,6 +8,7 @@ export function ManageView() {
   const {
     show,
     refresh,
+    setView,
   } = useApp();
 
   const handleCardCreated = async () => {
@@ -49,6 +50,7 @@ export function ManageView() {
 
       <CardManager
         onCardsChange={refresh}
+        onBack={() => setView('study')}
       />
 
       <CardDashboard onCardCreated={handleCardCreated} />
