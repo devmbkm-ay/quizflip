@@ -18,6 +18,8 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      delete config.headers.Authorization; // Nettoie l'en-tête si pas de token
     }
     return config;
   },

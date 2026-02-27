@@ -1,8 +1,38 @@
 // server/src/controllers/CardController.js
+import mongoose from 'mongoose';
 import Card from '../models/Card.js';
 import StudySession from '../models/StudySession.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { NotFoundError } from '../utils/errors.js';
+
+const isAdmin = (req) => req.user?.role === 'admin';
+
+const getReadScope = (req, { allowAdminUserFilter = false } = {}) => {
+  const scope = { isActive: true };
+
+  if (!isAdmin(req)) {
+    scope.user = req.user._id;
+    return scope;
+  }
+
+  if (allowAdminUserFilter && req.query.userId) {
+    if (mongoose.Types.ObjectId.isValid(req.query.userId)) {
+      scope.user = req.query.userId;
+    }
+  }
+
+  return scope;
+};
+
+const getWritableUserId = (req) => {
+  if (isAdmin(req) && req.body?.userId) {
+    if (mongoose.Types.ObjectId.isValid(req.body.userId)) {
+      return req.body.userId;
+    }
+  }
+
+  return req.user._id;
+};
 
 class CardController {
   // ==========================================
@@ -10,11 +40,12 @@ class CardController {
   // ==========================================
 
   getStats = asyncHandler(async (req, res) => {
-    const totalCards = await Card.countDocuments({ isActive: true });
-    const categories = await Card.distinct('category', { isActive: true });
+    const readScope = getReadScope(req, { allowAdminUserFilter: true });
+    const totalCards = await Card.countDocuments(readScope);
+    const categories = await Card.distinct('category', readScope);
 
     const categoryBreakdown = await Card.aggregate([
-      { $match: { isActive: true } },
+      { $match: readScope },
       { $group: { _id: '$category', count: { $sum: 1 } } },
       { $project: { name: '$_id', count: 1, _id: 0 } },
     ]);
@@ -30,14 +61,22 @@ class CardController {
   });
 
   getCategories = asyncHandler(async (req, res) => {
-    const categories = await Card.distinct('category', { isActive: true });
+    const readScope = getReadScope(req, { allowAdminUserFilter: true });
+    const categories = await Card.distinct('category', readScope);
     res.json({ success: true, data: categories });
   });
 
   getProgressStats = asyncHandler(async (req, res) => {
-    const { userId } = req.params;
+    let targetUserId = req.user._id;
+    if (
+      isAdmin(req) &&
+      req.query.userId &&
+      mongoose.Types.ObjectId.isValid(req.query.userId)
+    ) {
+      targetUserId = req.query.userId;
+    }
 
-    const sessions = await StudySession.find({ userId })
+    const sessions = await StudySession.find({ userId: targetUserId })
       .sort({ createdAt: -1 })
       .lean();
 
@@ -77,24 +116,25 @@ class CardController {
     const { mode = 'random', limit = 20 } = req.query;
 
     let cards;
-    const limitNum = Math.min(parseInt(limit) || 20, 100);
+    const limitNum = Math.min(parseInt(limit, 10) || 20, 100);
+    const readScope = getReadScope(req, { allowAdminUserFilter: true });
 
     switch (mode) {
       case 'random':
         cards = await Card.aggregate([
-          { $match: { isActive: true } },
+          { $match: readScope },
           { $sample: { size: limitNum } },
         ]);
         break;
       case 'difficult':
         cards = await Card.find({
-          isActive: true,
+          ...readScope,
           'reviewStats.timesCorrect': { $lt: 3 },
         }).limit(limitNum);
         break;
       case 'spaced':
         cards = await Card.find({
-          isActive: true,
+          ...readScope,
           $or: [
             { 'reviewStats.lastReviewed': null },
             {
@@ -106,7 +146,7 @@ class CardController {
         }).limit(limitNum);
         break;
       default:
-        cards = await Card.find({ isActive: true }).limit(limitNum);
+        cards = await Card.find(readScope).limit(limitNum);
     }
 
     res.json({ success: true, count: cards.length, data: cards });
@@ -119,7 +159,7 @@ class CardController {
   getAll = asyncHandler(async (req, res) => {
     const { category, search, limit = 50 } = req.query;
 
-    let filter = { isActive: true };
+    const filter = getReadScope(req, { allowAdminUserFilter: true });
 
     if (category) filter.category = category.toLowerCase();
 
@@ -133,19 +173,21 @@ class CardController {
 
     const cards = await Card.find(filter)
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit));
+      .limit(parseInt(limit, 10));
 
     res.json({ success: true, count: cards.length, data: cards });
   });
 
   create = asyncHandler(async (req, res) => {
     const { front, back, category, difficulty, tags } = req.body;
+    const ownerId = getWritableUserId(req);
     const normalizedFront = front.trim();
     const normalizedBack = back.trim();
     const normalizedCategory = category.toLowerCase().trim();
 
-    // Block only exact duplicates inside the same category.
+    // Block only exact duplicates inside the same category for the same owner.
     const existing = await Card.findOne({
+      user: ownerId,
       front: normalizedFront,
       back: normalizedBack,
       category: normalizedCategory,
@@ -166,12 +208,14 @@ class CardController {
       category: normalizedCategory,
       difficulty: difficulty || 2,
       tags: tags || [],
+      user: ownerId,
     });
 
     res.status(201).json({ success: true, data: card });
   });
 
   createBatch = asyncHandler(async (req, res) => {
+    const ownerId = getWritableUserId(req);
     const cards = Array.isArray(req.body.cards) ? req.body.cards : [];
 
     const normalizedCards = cards.map((card) => ({
@@ -180,6 +224,7 @@ class CardController {
       category: (card.category || 'general').toLowerCase().trim(),
       difficulty: card.difficulty || 2,
       tags: Array.isArray(card.tags) ? card.tags : [],
+      user: ownerId,
     }));
 
     if (normalizedCards.length === 0) {
@@ -190,6 +235,7 @@ class CardController {
     }
 
     const duplicateChecks = normalizedCards.map((card) => ({
+      user: ownerId,
       front: card.front,
       back: card.back,
       category: card.category,
@@ -197,18 +243,20 @@ class CardController {
     }));
 
     const existingCards = await Card.find({ $or: duplicateChecks })
-      .select('front back category')
+      .select('user front back category')
       .lean();
 
     const existingKeys = new Set(
       existingCards.map(
-        (card) => `${card.front}::${card.back}::${card.category}`,
+        (card) => `${card.user}::${card.front}::${card.back}::${card.category}`,
       ),
     );
 
     const cardsToCreate = normalizedCards.filter(
       (card) =>
-        !existingKeys.has(`${card.front}::${card.back}::${card.category}`),
+        !existingKeys.has(
+          `${card.user}::${card.front}::${card.back}::${card.category}`,
+        ),
     );
 
     if (cardsToCreate.length === 0) {
@@ -231,9 +279,10 @@ class CardController {
 
   getOne = asyncHandler(async (req, res) => {
     // ID already validated by middleware
-    const card = await Card.findById(req.params.id);
+    const filter = { _id: req.params.id, ...getReadScope(req) };
+    const card = await Card.findOne(filter);
 
-    if (!card || !card.isActive) {
+    if (!card) {
       throw new NotFoundError('Card not found');
     }
 
@@ -242,16 +291,24 @@ class CardController {
 
   update = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const updates = { ...req.body };
+    const updates = {};
+    const allowedFields = ['front', 'back', 'category', 'difficulty', 'tags'];
+    for (const field of allowedFields) {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        updates[field] = req.body[field];
+      }
+    }
 
     // Clean up inputs
     if (updates.front) updates.front = updates.front.trim();
     if (updates.back) updates.back = updates.back.trim();
     if (updates.category) updates.category = updates.category.toLowerCase();
 
+    const updateFilter = { _id: id, ...getReadScope(req) };
+
     // Check for duplicate when front/back/category combination changes.
     if (updates.front || updates.back || updates.category) {
-      const current = await Card.findById(id).lean();
+      const current = await Card.findOne(updateFilter).lean();
       if (!current) {
         throw new NotFoundError('Card not found');
       }
@@ -264,6 +321,7 @@ class CardController {
 
       const existing = await Card.findOne({
         _id: { $ne: id },
+        user: current.user,
         front: candidateFront,
         back: candidateBack,
         category: candidateCategory,
@@ -279,7 +337,7 @@ class CardController {
       }
     }
 
-    const updated = await Card.findByIdAndUpdate(id, updates, {
+    const updated = await Card.findOneAndUpdate(updateFilter, updates, {
       new: true,
       runValidators: true,
     });
@@ -292,8 +350,9 @@ class CardController {
   });
 
   delete = asyncHandler(async (req, res) => {
-    const card = await Card.findByIdAndUpdate(
-      req.params.id,
+    const filter = { _id: req.params.id, ...getReadScope(req) };
+    const card = await Card.findOneAndUpdate(
+      filter,
       { isActive: false },
       { new: true },
     );
@@ -314,8 +373,9 @@ class CardController {
     const { id } = req.params;
     const { wasCorrect } = req.body;
 
-    const card = await Card.findById(id);
-    if (!card || !card.isActive) {
+    const filter = { _id: id, ...getReadScope(req) };
+    const card = await Card.findOne(filter);
+    if (!card) {
       throw new NotFoundError('Card not found');
     }
 
@@ -329,7 +389,7 @@ class CardController {
       },
     };
 
-    const updated = await Card.findByIdAndUpdate(id, update, { new: true });
+    const updated = await Card.findOneAndUpdate(filter, update, { new: true });
 
     res.json({ success: true, data: updated });
   });

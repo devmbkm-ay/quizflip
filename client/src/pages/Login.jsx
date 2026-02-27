@@ -21,6 +21,7 @@ const Login = () => {
 
         // 2. Mise à jour de l'état global (Déclenche le basculement du Layout)
         setUser(response.data);
+        console.log('SETUSER:', response.data);
 
         // 3. Feedback positif
         if (showToast) showToast('Bienvenue dans votre Dojo !', 'success');
@@ -59,7 +60,7 @@ const Login = () => {
                 type="email"
                 required
                 className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-5 py-4 text-slate-100 input-glow outline-none focus:border-indigo-500/50 transition-all"
-                placeholder="aymard@gmail.com"
+                placeholder="your-name@example.com"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })

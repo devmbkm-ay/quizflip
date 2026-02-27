@@ -1,22 +1,23 @@
 import { useApp } from '../../contexts/AppContext.jsx';
+import { useCard } from '../../hooks/useCard.js'; // Importation du hook métier
 import { CardManager } from '../../components/cards/CardManager.jsx';
 import { CardDashboard } from '../../components/cards/CardDashboard.jsx';
 import { AutoGenerate } from '../../components/cards/AutoGenerate.jsx';
-// import { SearchBar } from '../../components/ui/SearchBar';
 
 export function ManageView() {
-  const {
-    show,
-    refresh,
-    setView,
-  } = useApp();
+  // 1. On récupère la navigation du contexte global
+  const { setView } = useApp();
+
+  // 2. On récupère TOUTE la logique des cartes et les outils de notification
+  // Note: Assure-toi que ton hook useToast renvoie bien 'show' ou utilise 'showToast'
+  const { refresh, error, showToast } = useCard();
 
   const handleCardCreated = async () => {
     try {
       await refresh();
-      show('Card created successfully!');
+      if (showToast) showToast('Card created successfully!', 'success');
     } catch (err) {
-      show(err.message, 'error');
+      if (showToast) showToast(err.message, 'error');
     }
   };
 
@@ -24,37 +25,28 @@ export function ManageView() {
     try {
       await refresh();
       const count = Array.isArray(cards) ? cards.length : 1;
-      show(`${count} card${count > 1 ? 's' : ''} created successfully!`);
+      const message = `${count} card${count > 1 ? 's' : ''} created successfully!`;
+      if (showToast) showToast(message, 'success');
     } catch (err) {
-      show(err.message, 'error');
+      if (showToast) showToast(err.message, 'error');
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        {/* <h2 className="text-2xl font-bold text-white">Manage Cards</h2> */}
-        {/* <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder="Search cards..."
-        /> */}
-        {/* <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search cards..."
-          className="px-4 py-2 bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm"
-        /> */}
-      </div>
-
-      <CardManager
-        onCardsChange={refresh}
-        onBack={() => setView('study')}
-      />
+      {/* On passe 'refresh' à CardManager pour qu'il puisse 
+         recharger la liste après une suppression ou édition 
+      */}
+      <CardManager onCardsChange={refresh} onBack={() => setView('study')} />
 
       <CardDashboard onCardCreated={handleCardCreated} />
       <AutoGenerate onCardsCreated={handleCardsCreated} />
+
+      {error && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-rose-500/10 text-rose-400 px-4 py-2 rounded-xl border border-rose-500/20">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

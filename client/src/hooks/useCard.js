@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { cardApi } from '../services/api.js';
+import { useApp } from '../contexts/AppContext.jsx'; // Import du contexte
 
 export function useCard() {
+  const { user } = useApp(); // On récupère l'utilisateur réactif
   const [cards, setCards] = useState([]);
   const [categories, setCategories] = useState([]);
   const [stats, setStats] = useState(null);
@@ -9,30 +11,35 @@ export function useCard() {
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const loadData = useCallback(async (silent = false) => {
-    try {
-      if (!silent) setLoading(true);
-      else setIsRefreshing(true);
-      setError(null);
+  const loadData = useCallback(
+    async (silent = false) => {
+      // SÉCURITÉ : Si pas d'utilisateur, on n'appelle pas l'API
+      if (!user) return;
 
-      const [cardsRes, catsRes, statsRes] = await Promise.all([
-        cardApi.getAll(),
-        cardApi.getCategories(),
-        cardApi.getStats(),
-      ]);
+      try {
+        if (!silent) setLoading(true);
+        else setIsRefreshing(true);
+        setError(null);
 
-      setCards(cardsRes.data || []);
-      setCategories(catsRes.data || []);
-      setStats(statsRes.data);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
+        const [cardsRes, catsRes, statsRes] = await Promise.all([
+          cardApi.getAll(),
+          cardApi.getCategories(),
+          cardApi.getStats(),
+        ]);
+
+        setCards(cardsRes.data || []);
+        setCategories(catsRes.data || []);
+        setStats(statsRes.data);
+      } catch (err) {
+        setError(err.message);
+        // On ne jette pas l'erreur pour éviter de casser l'UI
+      } finally {
+        setLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [user],
+  ); // Dépendance à l'utilisateur
 
   const refresh = useCallback(() => loadData(true), [loadData]);
 
@@ -68,8 +75,7 @@ export function useCard() {
 
   const reviewCard = useCallback(async (id, wasCorrect) => {
     await cardApi.review(id, wasCorrect);
-
-    // Optimistic update
+    // Mise à jour optimiste
     setCards((prev) =>
       prev.map((card) =>
         card._id === id
@@ -85,25 +91,24 @@ export function useCard() {
           : card,
       ),
     );
-
-    // Background sync
+    // Synchro en arrière-plan
     const res = await cardApi.getAll();
     setCards(res.data || []);
   }, []);
 
+  // --- LE COEUR DU CHANGEMENT ---
   useEffect(() => {
-    const token = localStorage.getItem('token');
-
-    // On ne lance le chargement que si on a un token
-    // Cela évite les erreurs 401 au premier montage avant le Login
-    if (token) {
-      loadData().catch(() => {
-        // Error state is already set in loadData; this prevents unhandled promise warnings.
-      });
+    if (user) {
+      // Si Aymard ou Bitémo se connecte, on charge leurs données
+      loadData();
     } else {
-      setLoading(false); // Pas de token, on ne charge pas les données
+      // Si déconnexion, on vide tout proprement
+      setCards([]);
+      setCategories([]);
+      setStats(null);
+      setLoading(false);
     }
-  }, [loadData]);
+  }, [user, loadData]); // Réagit dès que l'utilisateur change
 
   return {
     cards,
@@ -113,7 +118,7 @@ export function useCard() {
     error,
     isRefreshing,
     loadData,
-    refresh: () => loadData(true),
+    refresh,
     createCard,
     updateCard,
     deleteCard,

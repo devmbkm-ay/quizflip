@@ -1,69 +1,64 @@
 import { useApp } from '../../contexts/AppContext.jsx';
+import { useCard } from '../../hooks/useCard.js'; // On importe le hook ici
 import { FlipCard } from '../../components/cards/FlipCard.jsx';
-import { CategoryFilter } from '../../components/ui/CategoryFilter.jsx';
 import { StatsHeader } from '../../components/layout/StatsHeader.jsx';
-import { LoadingState } from '../../components/ui/LoadingState.jsx';
-import { ErrorState } from '../../components/ui/ErrorState.jsx';
 import { EmptyState } from '../../components/ui/EmptyState.jsx';
+import { LoadingState } from '../../components/ui/LoadingState.jsx';
 
 export function StudyView() {
-  const {
-    cards: allCards,
-    filteredItems: cards,
-    categories,
-    stats,
-    loading,
-    error,
-    loadData,
-    reviewCard,
-    show,
-    filter,
-    setFilter,
-  } = useApp();
+  // 1. On récupère uniquement la navigation/UI depuis le contexte
+  const { setView } = useApp();
 
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState error={error} onRetry={loadData} />;
+  // 2. On récupère TOUTE la donnée et la logique des cartes depuis le hook
+  const { cards, stats, loading, refresh, isRefreshing, reviewCard } =
+    useCard();
 
-  const handleReview = async (cardId, wasCorrect) => {
-    try {
-      await reviewCard(cardId, wasCorrect);
-      show(wasCorrect ? 'Great job! 🎉' : 'Keep practicing! 💪');
-    } catch {
-      show('Failed to save review', 'error');
-    }
-  };
+  // 3. Gestion du chargement initial (évite le crash du .reduce ou des stats)
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  // 4. Si aucune carte n'est trouvée (cas de Bitémo)
+  if (!cards || cards.length === 0) {
+    return (
+      <div className="space-y-10 animate-fade-in">
+        <StatsHeader
+          stats={{ totalCards: 0, totalCategories: 0, averageMastery: 0 }}
+          onRefresh={refresh}
+          isRefreshing={isRefreshing}
+        />
+        <EmptyState onAction={() => setView('manage')} />
+      </div>
+    );
+  }
+
+  // 5. Calculs de sécurité (si tu en as à la ligne 44)
+  // On utilise le "Optional Chaining" ?. pour éviter tout crash
+  const totalReviews = cards.reduce(
+    (acc, c) => acc + (c.reviewStats?.timesReviewed || 0),
+    0,
+  );
 
   return (
-    <div className="space-y-8">
-      <StatsHeader stats={stats} onRefresh={() => loadData(true)} />
-
-      <CategoryFilter
-        categories={categories}
-        selected={filter}
-        onSelect={setFilter}
-        counts={categories.reduce(
-          (acc, cat) => ({
-            ...acc,
-            [cat]: allCards.filter((c) => c.category === cat).length,
-          }),
-          { all: allCards.length },
-        )}
+    <div className="space-y-10 animate-fade-in">
+      {/* Header avec les stats réelles du hook */}
+      <StatsHeader
+        stats={stats}
+        onRefresh={refresh}
+        isRefreshing={isRefreshing}
       />
 
-      {cards.length === 0 ? (
-        <EmptyState type={filter !== 'all' ? 'filter' : 'empty'} />
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {cards.map((card, index) => (
-            <FlipCard
-              key={card._id}
-              card={card}
-              onReview={handleReview}
-              index={index}
-            />
-          ))}
-        </div>
-      )}
+      {/* Grille de tes 38 cartes (pour Aymard) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {cards.map((card, index) => (
+          <FlipCard
+            key={card._id}
+            card={card}
+            index={index}
+            onReview={reviewCard}
+          />
+        ))}
+      </div>
     </div>
   );
 }

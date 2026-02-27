@@ -2,9 +2,6 @@ import mongoose from 'mongoose';
 
 const cardSchema = new mongoose.Schema(
   {
-    // We'll add userId later in Phase 8 (Auth)
-    // For now, cards are global for easier testing
-
     front: {
       type: String,
       required: [true, 'Front content is required'],
@@ -72,6 +69,12 @@ cardSchema.virtual('mastery').get(function () {
 // Index for faster queries
 cardSchema.index({ category: 1, createdAt: -1 });
 cardSchema.index({ tags: 1 });
+cardSchema.index({ user: 1, isActive: 1, createdAt: -1 });
+cardSchema.index({ user: 1, category: 1, isActive: 1 });
+cardSchema.index(
+  { user: 1, front: 1, back: 1, category: 1, isActive: 1 },
+  { unique: true, partialFilterExpression: { isActive: true } },
+);
 
 const Card = mongoose.model('Card', cardSchema);
 
