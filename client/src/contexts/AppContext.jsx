@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 // import { useCard } from '../hooks/useCard.js';
-// import { useToast } from '../hooks/useToast.js';
+import { useToast } from '../hooks/useToast.js';
 // import { useFilter } from '../hooks/useFilter.js';
 
 const AppContext = createContext(null);
