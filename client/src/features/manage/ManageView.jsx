@@ -10,7 +10,7 @@ export function ManageView() {
 
   // 2. On récupère TOUTE la logique des cartes et les outils de notification
   // Note: Assure-toi que ton hook useToast renvoie bien 'show' ou utilise 'showToast'
-  const { refresh, error, showToast } = useCard();
+  const { cards, refresh, error, showToast } = useCard();
 
   const handleCardCreated = async () => {
     try {
@@ -37,7 +37,7 @@ export function ManageView() {
       {/* On passe 'refresh' à CardManager pour qu'il puisse 
          recharger la liste après une suppression ou édition 
       */}
-      <CardManager onCardsChange={refresh} onBack={() => setView('study')} />
+      <CardManager cards={cards} onBack={() => setView('study')} />
 
       <CardDashboard onCardCreated={handleCardCreated} />
       <AutoGenerate onCardsCreated={handleCardsCreated} />
