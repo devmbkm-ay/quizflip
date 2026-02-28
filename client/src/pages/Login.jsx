@@ -42,7 +42,8 @@ const Login = () => {
       }
     } catch (err) {
       console.error('Erreur auth:', err);
-      const msg = err.response?.data?.error || 'Une erreur est survenue';
+      const msg =
+        err?.message || err?.response?.data?.error || 'Une erreur est survenue';
       alert(msg);
     } finally {
       setLoading(false);

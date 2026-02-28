@@ -7,10 +7,10 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Function to connect to MongoDB using Mongoose
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
   if (!uri) {
-    throw new Error('MONGODB_URI is not defined');
+    throw new Error('Neither MONGODB_URI nor MONGO_URI is defined');
   }
 
   // Retry loop avoids startup crashes when Mongo DNS/health is not ready yet.

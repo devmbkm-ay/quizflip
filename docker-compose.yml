@@ -5,6 +5,8 @@ services:
     image: mongo:6-jammy
     container_name: flipcard-mongo
     restart: unless-stopped
+    env_file:
+      - ./.env
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-root}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-rootpassword}
@@ -21,7 +23,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "mongosh --quiet -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"
+          "mongosh --quiet -u $$MONGO_APP_USERNAME -p $$MONGO_APP_PASSWORD --authenticationDatabase $$MONGO_DB --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"
         ]
       interval: 5s
       timeout: 5s
@@ -34,16 +36,18 @@ services:
       dockerfile: Dockerfile
     container_name: flipcard-server
     restart: unless-stopped
+    env_file:
+      - ./.env
     environment:
-      NODE_ENV: development
-      PORT: 5000
-      MONGODB_URI: ${MONGO_URI:-mongodb://${MONGO_APP_USERNAME:-quizflip_app}:${MONGO_APP_PASSWORD:-quizflip_app_password}@mongodb:27017/${MONGO_DB:-quizflip}?authSource=${MONGO_DB:-quizflip}}
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-5000}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-env}
-      JWT_EXPIRE: 7d
+      JWT_EXPIRE: ${JWT_EXPIRE:-7d}
     ports:
       - "${SERVER_PORT:-5000}:5000"
     volumes:
       - ./server:/app
+      - ./.env:/app/.env:ro
       - /app/node_modules
     depends_on:
       mongodb:
@@ -56,6 +60,8 @@ services:
       dockerfile: Dockerfile
     container_name: flipcard-client
     restart: unless-stopped
+    env_file:
+      - ./.env
     environment:
       VITE_REACT_APP_API_BASE_URL: ${VITE_REACT_APP_API_BASE_URL:-http://localhost:5000/api}
     ports:

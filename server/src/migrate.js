@@ -7,11 +7,11 @@ dotenv.config();
 
 async function migrate() {
   try {
-    // Utilise la variable MONGO_URI de ton .env (celle qui pointe vers Atlas)
-    const uri = process.env.MONGO_URI;
+    // Utilise la variable MONGODB_URI de ton .env (celle qui pointe vers Atlas)
+    const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
     if (!uri) {
-      throw new Error('MONGO_URI non trouvée dans le fichier .env');
+      throw new Error('MONGODB_URI non trouvée dans le fichier .env');
     }
 
     console.log('Connexion à MongoDB Atlas...');

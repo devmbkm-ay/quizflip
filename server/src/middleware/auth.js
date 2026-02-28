@@ -27,6 +27,11 @@ export const protect = asyncHandler(async (req, res, next) => {
 
     // Fetch user from database and exclude password
     req.user = await User.findById(decoded.id).select('-password');
+    if (!req.user) {
+      return res.status(401).json({
+        message: 'User associated with this token no longer exists',
+      });
+    }
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Token is not valid or expired' });
@@ -38,6 +43,9 @@ export const protect = asyncHandler(async (req, res, next) => {
 for different routes, making it flexible and reusable across the application.) */
 export const authorize = (...roles) => {
   return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authorized to access this route' });
+    }
     // Check if user's role is in the allowed roles
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
