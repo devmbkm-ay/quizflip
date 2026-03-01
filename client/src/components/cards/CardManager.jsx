@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 
-export function CardManager({ cards = [], onEdit, onDelete, onStudy }) {
+export function CardManager({ cards = { cards }, onEdit, onDelete, onStudy }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
