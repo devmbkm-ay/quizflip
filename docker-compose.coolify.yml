@@ -62,7 +62,7 @@ services:
     restart: unless-stopped
     depends_on:
       api:
-        condition: api
+        condition: service_started
     # healthcheck:
     #   test: ["CMD-SHELL", "wget -qO- http://localhost/health >/dev/null 2>&1 || exit 1"]
     #   interval: 30s
