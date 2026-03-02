@@ -1,5 +1,6 @@
 services:
   mongodb:
+    profiles: ["local-db"]
     image: mongo:6-jammy
     restart: unless-stopped
     environment:
@@ -27,7 +28,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 8080
-      MONGODB_URI: ${MONGODB_URI:-mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DB}?authSource=admin}
+      MONGODB_URI: ${MONGODB_URI}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRE: ${JWT_EXPIRE:-7d}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
@@ -36,9 +37,11 @@ services:
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
       RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
       AI_RATE_LIMIT_MAX: ${AI_RATE_LIMIT_MAX:-10}
-    depends_on:
-      mongodb:
-        condition: service_healthy
+      SEED_DEV_USER: "false"
+      DEV_USER_EMAIL: ""
+      DEV_USER_USERNAME: ""
+      DEV_USER_PASSWORD: ""
+      DEV_USER_ROLE: "user"
     healthcheck:
       test:
         [
@@ -55,7 +58,7 @@ services:
       context: ./client
       dockerfile: Dockerfile.prod
       args:
-        VITE_REACT_APP_API_BASE_URL: ${VITE_REACT_APP_API_BASE_URL:-http://localhost:8080/api}
+        VITE_REACT_APP_API_BASE_URL: ${VITE_REACT_APP_API_BASE_URL}
     restart: unless-stopped
     depends_on:
       api:

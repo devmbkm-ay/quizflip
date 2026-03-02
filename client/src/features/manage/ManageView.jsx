@@ -258,6 +258,15 @@ function EditCardModal({ card, isSaving, onCancel, onSubmit }) {
 function DeleteCardModal({ card, isDeleting, onCancel, onConfirm }) {
   if (!card) return null;
 
+  const frontPreview =
+    (card.front || '').length > 90
+      ? `${card.front.slice(0, 90)}...`
+      : card.front || 'Untitled card';
+  const backPreview =
+    (card.back || '').length > 120
+      ? `${card.back.slice(0, 120)}...`
+      : card.back || '';
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div
@@ -265,32 +274,57 @@ function DeleteCardModal({ card, isDeleting, onCancel, onConfirm }) {
         onClick={onCancel}
       />
 
-      <div className="relative w-full max-w-sm glass-premium rounded-3xl border border-white/10 shadow-2xl p-8 text-center animate-modal-in">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
-          <span className="text-4xl">🗑️</span>
-        </div>
+      <div className="relative w-full max-w-lg glass-premium rounded-3xl border border-rose-500/20 shadow-2xl p-6 sm:p-8 animate-modal-in">
+        <div className="absolute -top-8 right-6 w-28 h-28 bg-rose-500/20 rounded-full blur-3xl pointer-events-none" />
 
-        <h3 className="text-2xl font-bold text-white mb-2">Delete Card?</h3>
-        <p className="text-slate-400 mb-8">
-          This action cannot be undone and will remove this card from your study
-          list.
-        </p>
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold uppercase tracking-wider mb-4">
+            <span className="text-sm">⚠️</span>
+            <span>Permanent Action</span>
+          </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            disabled={isDeleting}
-            className="flex-1 py-3.5 rounded-2xl border border-slate-700/50 text-slate-400 hover:text-white hover:bg-white/5 transition-all font-medium"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isDeleting}
-            className="flex-1 py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-lg shadow-rose-500/20 transition-all active:scale-95 disabled:opacity-70"
-          >
-            {isDeleting ? 'Deleting...' : 'Delete'}
-          </button>
+          <div className="w-16 h-16 mb-5 rounded-2xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+            <span className="text-3xl">🗑️</span>
+          </div>
+
+          <h3 className="text-2xl font-bold text-white mb-2">Delete this card?</h3>
+          <p className="text-slate-300 mb-5 leading-relaxed">
+            You are about to permanently remove this card and all its review
+            progress. This cannot be undone.
+          </p>
+
+          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-slate-400 uppercase tracking-wider">
+                Card Preview
+              </span>
+              <span className="text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700/70 capitalize">
+                {card.category || 'general'}
+              </span>
+            </div>
+
+            <p className="text-white font-semibold text-sm mb-2">{frontPreview}</p>
+            {backPreview ? (
+              <p className="text-slate-400 text-sm leading-relaxed">{backPreview}</p>
+            ) : null}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              onClick={onCancel}
+              disabled={isDeleting}
+              className="w-full py-3.5 rounded-2xl border border-slate-700/50 text-slate-300 hover:text-white hover:bg-white/5 transition-all font-medium"
+            >
+              Keep Card
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={isDeleting}
+              className="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-lg shadow-rose-500/20 transition-all active:scale-[0.98] disabled:opacity-70"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
