@@ -38,7 +38,7 @@ export function AppProvider({ children }) {
 
       // 4. LE COUP DE GRÂCE : On force un rechargement complet de la page
       // Cela réinitialise l'instance Axios et tous les Hooks à zéro.
-      window.location.href = '/login';
+      window.location.href = '/';
     } catch (err) {
       console.error('Erreur lors de la déconnexion:', err);
       // En cas d'échec du JS, on force quand même la redirection
